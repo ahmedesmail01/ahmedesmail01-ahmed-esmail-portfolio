@@ -1,0 +1,1 @@
+.spotlight{position:absolute;width:760px;height:760px;pointer-events:none;opacity:.55;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--spotlight-fill) 27%,transparent) 0%,color-mix(in srgb,var(--spotlight-fill) 9%,transparent) 30%,transparent 68%);filter:blur(24px)}

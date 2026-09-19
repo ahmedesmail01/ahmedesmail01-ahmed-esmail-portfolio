@@ -2,6 +2,7 @@ import { Header, Footer } from "@/components/site-shell";
 // import { HeroSection } from "@/components/home/hero-section";
 import { HorizonHeroSection } from "@/components/ui/horizon-hero-section";
 import { HorizonPromptHero } from "@/components/ui/horizon-prompt-hero";
+import { SplinePortfolioHero } from "@/components/home/spline-portfolio-hero";
 import { TechStrip } from "@/components/home/tech-strip";
 import { WorkSection } from "@/components/home/work-section";
 import { ServicesSection } from "@/components/home/services-section";
@@ -15,7 +16,8 @@ export default function Home() {
       <Header />
       <main>
         {/* <HorizonHeroSection /> */}
-        <HorizonPromptHero />
+        {/* <HorizonPromptHero /> */}
+        <SplinePortfolioHero />
         {/* <HeroSection /> */}
         <TechStrip />
         <WorkSection />
