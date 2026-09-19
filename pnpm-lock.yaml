@@ -14,6 +14,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.7.0
         version: 1.7.0(@date-fns/tz@1.5.0)(@types/react@19.2.14)(date-fns@4.4.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@designcodeio/threeui':
+        specifier: file:vendor/threeui
+        version: file:vendor/threeui(react@19.2.6)
       '@fontsource-variable/manrope':
         specifier: ^5.3.0
         version: 5.3.0
@@ -325,6 +328,11 @@ packages:
 
   '@date-fns/tz@1.5.0':
     resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
+
+  '@designcodeio/threeui@file:vendor/threeui':
+    resolution: {directory: vendor/threeui, type: directory}
+    peerDependencies:
+      react: '>=18'
 
   '@dimforge/rapier3d-compat@0.12.0':
     resolution: {integrity: sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow==}
@@ -5030,6 +5038,10 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.9
 
   '@date-fns/tz@1.5.0': {}
+
+  '@designcodeio/threeui@file:vendor/threeui(react@19.2.6)':
+    dependencies:
+      react: 19.2.6
 
   '@dimforge/rapier3d-compat@0.12.0': {}
 

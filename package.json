@@ -6,14 +6,16 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "build:sublevel": "node --experimental-strip-types scripts/build-sublevel.mjs",
     "install:ci": "bash scripts/install-pnpm.sh",
-    "dev": "node scripts/dev-next.mjs",
-    "build": "next build --webpack",
+    "dev": "node --experimental-strip-types scripts/build-sublevel.mjs && node scripts/dev-next.mjs",
+    "build": "node --experimental-strip-types scripts/build-sublevel.mjs && next build --webpack",
     "start": "next dev --hostname 0.0.0.0 --port 5173",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@designcodeio/threeui": "file:vendor/threeui",
     "@base-ui/react": "^1.7.0",
     "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
@@ -71,7 +73,8 @@
   "overrides": {
     "miniflare": {
       "sharp": "0.35.4"
-    }
+    },
+    "miniflare>sharp": "0.35.4"
   },
   "packageManager": "pnpm@11.25.0"
 }

@@ -1,0 +1,17 @@
+{
+  "name": "@designcodeio/threeui",
+  "version": "0.0.0-vendored",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.tsx",
+    "./style.css": "./style.css"
+  },
+  "sideEffects": [
+    "./style.css"
+  ],
+  "peerDependencies": {
+    "react": ">=18"
+  }
+}

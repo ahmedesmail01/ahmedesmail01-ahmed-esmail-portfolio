@@ -16,6 +16,9 @@ Open http://localhost:5173. Use `pnpm build` to generate the deployable `out` di
 
 ## Edit content
 
+- `app/page.tsx` uses the exact-source ThreeUI `SublevelStudioLandingPage`, customized for Ahmed. The previous homepage is preserved as `LegacyHomePage` in `components/home/legacy-home-page.tsx`.
+- `scripts/build-sublevel.mjs` contains homepage copy and maps the shared content into the original project/service cells. `scripts/sublevel-runtime-content.mjs` customizes the 3D canvas labels and terminal index. Run `pnpm build:sublevel` after editing; `pnpm dev` and `pnpm build` also regenerate the page automatically.
+- `vendor/threeui/upstream/` archives all four verified source files. See `vendor/threeui/README.md` for hashes and the small frame adaptations. Do not edit the generated `public/landing-pages/sublevel-studio.html` directly.
 - `lib/content.ts`: profile links, projects, skills, services and article content.
 - `components/video-project-card.tsx`: reusable `VideoProjectCard` and `ProjectVideo` components. Project props include title, description, techStack, loomVideoId, liveLink and githubLink, plus slug, image, category and color for presentation.
 - Set `loomVideoId` to a real Loom ID or a supported HTTPS Loom / YouTube embed / Vimeo player URL. The iframe mounts only after Play, uses `loading="lazy"`, and reserves its aspect ratio. There are no third-party video requests on the initial page load.
@@ -26,9 +29,9 @@ Open http://localhost:5173. Use `pnpm build` to generate the deployable `out` di
 
 The supplied profile is the source for experience and contact information. KeyBuilds, Sky Events and Job Elite are explicitly marked sample case studies as requested. Fittra is grounded in the profile. All covers are illustrative and are not actual application screenshots. No performance metrics, testimonials, client outcomes or project URLs were invented. Journal posts are starter editorial content to review before public use.
 
-The form validates using React Hook Form and Zod, then opens a populated email draft. Visitors must send it in their email client. It does not claim server delivery or store inquiries. To support direct delivery, add an authenticated server-side email provider endpoint and replace the mailto handler; do not expose provider secrets in browser code. Static export currently has no server runtime.
+The new homepage enquiry form validates an email address and opens a populated email draft, with an accessible validation message and fallback email link. The preserved legacy form uses React Hook Form and Zod. Visitors must send the draft in their email client; neither form claims server delivery or stores inquiries. Static export currently has no server runtime.
 
-Reduced-motion settings disable GSAP parallax, reveal movement and marquee animation. Custom fonts are self-hosted. Images reserve dimensions and below-fold media is lazy loaded.
+The ThreeUI homepage preserves its authored animation and reduced-motion behavior. Its fonts load from Google Fonts; the lobby uses Three.js 0.160 and GLTFLoader from the original CDN paths, alongside the authored inlined media and runtimes. The older pages retain their self-hosted fonts and existing motion settings.
 
 ## Service research and scope
 
@@ -48,4 +51,4 @@ Images are concept covers; confirm third-party usage rights or replace them with
 
 ## Verification
 
-Next.js production export and TypeScript checks pass. Project navigation and image loading were inspected in the preview. The preview did not reliably hydrate the contact interaction, so end-to-end client validation was not confirmed there. Native required, email and length constraints supplement the React Hook Form / Zod validation. No Lighthouse score is claimed.
+Next.js production export and TypeScript checks pass. The new homepage was checked in Chrome at desktop and mobile sizes: lobby rendering, arcade play, basketball shooting, CRT browsing, terminal open/close, animated menu navigation, email validation and draft construction, project navigation, and the existing `/#contact` deep link. Changed files pass ESLint; the full lint run still reports pre-existing errors in the older portfolio files. No Lighthouse score is claimed.
