@@ -26,7 +26,7 @@ export function GenerativeArtScene() {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
+        pointLightPos: { value: new THREE.Vector3(0, 0, 2) },
         color: { value: new THREE.Color("#7dd3fc") },
       },
       vertexShader: `                uniform float time;
@@ -124,12 +124,10 @@ export function GenerativeArtScene() {
     resize();
 
     const handleMouseMove = (event: MouseEvent) => {
-      const x = (event.clientX / window.innerWidth) * 2 - 1;
-      const y = -(event.clientY / window.innerHeight) * 2 + 1;
-      const vector = new THREE.Vector3(x, y, 0.5).unproject(camera);
-      const direction = vector.sub(camera.position).normalize();
-      const distance = -camera.position.z / direction.z;
-      material.uniforms.pointLightPos.value = camera.position.clone().add(direction.multiplyScalar(distance));
+      const rect = mount.getBoundingClientRect();
+      const x = THREE.MathUtils.clamp(((event.clientX - rect.left) / rect.width) * 2 - 1, -1, 1);
+      const y = THREE.MathUtils.clamp(1 - ((event.clientY - rect.top) / rect.height) * 2, -1, 1);
+      material.uniforms.pointLightPos.value.set(x * 1.8, y * 1.8, 2);
     };
     window.addEventListener("mousemove", handleMouseMove);
 
