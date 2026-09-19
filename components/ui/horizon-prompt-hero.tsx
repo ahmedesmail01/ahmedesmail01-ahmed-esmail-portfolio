@@ -1,18 +1,39 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { useSceneVisible } from "./use-scene-visible";
 import { createWebGLRenderer } from "./create-webgl-renderer";
+import { profile } from "@/lib/content";
 import styles from "./horizon-prompt-hero.module.css";
 
 const chapters = [
-  { title: "HORIZON", line1: "Where vision meets reality,", line2: "we shape the future of tomorrow" },
-  { title: "COSMOS", line1: "Beyond the boundaries of imagination,", line2: "lies the universe of possibilities" },
-  { title: "INFINITY", line1: "In the space between thought and creation,", line2: "we find the essence of true innovation" },
+  {
+    title: profile.name.toUpperCase(),
+    line1: "Full-Stack & Frontend Engineer based in Cairo.",
+    line2: "I turn good ideas into exceptional digital experiences.",
+    action: "Explore my work",
+    href: "#work",
+  },
+  {
+    title: "BUILT RIGHT",
+    line1: "Production web apps, enterprise platforms, and scalable backends.",
+    line2: "Thoughtful design and thoughtful code, from idea to release.",
+    action: "See case studies",
+    href: "#work",
+  },
+  {
+    title: "LET'S BUILD",
+    line1: "Have a good idea? Let's make something that matters.",
+    line2: "Available for projects in Cairo and worldwide.",
+    action: "Get in touch",
+    href: "#contact",
+  },
 ];
 
 export function HorizonPromptHero() {
@@ -283,12 +304,12 @@ export function HorizonPromptHero() {
   const chapter = chapters[chapterIndex];
 
   return (
-    <section ref={containerRef} className={styles.container} aria-label="Horizon demo hero">
+    <section ref={containerRef} className={styles.container} aria-label="Ahmed Esmail portfolio introduction">
       <div ref={stageRef} className={styles.stage}>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
         <div className={styles.menu} aria-hidden="true">
           <div className={styles.menuIcon}><span /><span /><span /></div>
-          <div className={styles.verticalText}>SPACE</div>
+          <div className={styles.verticalText}>PORTFOLIO</div>
         </div>
         <div className={styles.content} key={chapter.title}>
           <h2 className={styles.title}>{chapter.title}</h2>
@@ -296,6 +317,9 @@ export function HorizonPromptHero() {
             <p>{chapter.line1}</p>
             <p>{chapter.line2}</p>
           </div>
+          <Link className={styles.action} href={chapter.href}>
+            {chapter.action} <ArrowUpRight size={18} />
+          </Link>
         </div>
         <div className={styles.scroll} aria-label={`Scroll progress ${Math.round(progress * 100)} percent`}>
           <span>SCROLL</span>
