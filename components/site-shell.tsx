@@ -1,0 +1,8 @@
+'use client';
+import Link from 'next/link';
+import {useState} from 'react';
+import {ArrowUpRight,Menu,X,Code2,BriefcaseBusiness} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {profile} from '@/lib/content';
+export function Header(){const [open,setOpen]=useState(false);return <header className="site-header"><nav className="wrap"><Link className="brand" href="/" aria-label="Ahmed Esmail home">ae<span>✳</span></Link><div className="desktop-nav"><Link href="/#work">Selected work</Link><Link href="/services">Services</Link><Link href="/#about">About</Link><Link href="/blogs">Journal</Link></div><Link className="nav-cta" href="/#contact">Let's talk <ArrowUpRight size={16}/></Link><Button variant="ghost" className="mobile-menu" aria-label={open?'Close navigation':'Open navigation'} aria-expanded={open} onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</Button></nav>{open&&<div className="mobile-links">{[['Selected work','/#work'],['Services','/services'],['About','/#about'],['Journal','/blogs'],['Contact','/#contact']].map(([label,href])=><Link key={label} href={href} onClick={()=>setOpen(false)}>{label}<ArrowUpRight size={18}/></Link>)}</div>}</header>}
+export function Footer(){return <footer className="wrap footer"><Link className="brand" href="/">ae<span>✳</span></Link><p>© {new Date().getFullYear()} Ahmed Esmail</p><div><a href={profile.github} target="_blank" rel="noreferrer"><Code2 size={16}/>GitHub</a><a href={profile.linkedin} target="_blank" rel="noreferrer"><BriefcaseBusiness size={16}/>LinkedIn</a><a href="mailto:ahmedesmailofficial01@gmail.com">Email <ArrowUpRight size={16}/></a></div><span>CAIRO, EGYPT ↗ WORLDWIDE</span></footer>}
