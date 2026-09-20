@@ -14,13 +14,15 @@ pnpm dev
 
 Open http://localhost:5173. Use `pnpm build` to generate the deployable `out` directory. Scripts use Node.js and work in Windows PowerShell without Bash, Unix environment assignments or shell utilities. Any unused inherited infrastructure helpers are not required for the Next.js workflow.
 
-On Vercel, `vercel.json` redirects the iframe's `/landing-pages/sublevel-studio.html` URL to `/landing-pages/sublevel-studio/`. The deployed static export serves the document at that clean URL; requesting the `.html` URL otherwise displays the application's 404 inside the iframe. Keep this rule when deploying to Vercel. Local development and other static hosts continue using the original HTML path. Push configuration changes and redeploy for the rule to take effect.
+On Vercel, `vercel.json` redirects the Sylva and preserved Sublevel iframe HTML URLs to their clean, trailing-slash URLs. Keep these rules when deploying to Vercel to avoid a 404 inside the iframe. Sylva's generated document includes a `/landing-pages/` base URL so its original relative asset paths work after the redirect. Local development and other static hosts continue using the original HTML paths. Push configuration changes and redeploy for the rules to take effect.
 
 ## Edit content
 
-- `app/page.tsx` uses the exact-source ThreeUI `SublevelStudioLandingPage`, customized for Ahmed. The previous homepage is preserved as `LegacyHomePage` in `components/home/legacy-home-page.tsx`.
-- `scripts/build-sublevel.mjs` contains homepage copy and maps the shared content into the original project/service cells. `scripts/sublevel-runtime-content.mjs` customizes the 3D canvas labels and terminal index. Run `pnpm build:sublevel` after editing; `pnpm dev` and `pnpm build` also regenerate the page automatically.
-- `vendor/threeui/upstream/` archives all four verified source files. See `vendor/threeui/README.md` for hashes and the small frame adaptations. Do not edit the generated `public/landing-pages/sublevel-studio.html` directly.
+- `app/page.tsx` includes the exact-source ThreeUI `SylvaHero`, Living Green, followed by work, services, about, toolkit, process, journal, FAQ, and contact sections. `components/sylva/` contains the shared olive/cream design, navigation, cards, email form, and footer used by every route. Most content is server-rendered; the FAQ uses native disclosure controls and images below the hero load lazily.
+- Previous homepage versions remain in `components/home/legacy-home-page.tsx`, `sublevel-home-page.tsx`, and `sylva-hero-home-page.tsx` (the hero-only version). Previous blog index, article, project detail, services, and 404 pages are archived in `components/legacy/pages/`; its README maps each component to its original route.
+- `scripts/build-sylva.mjs` customizes hero copy and verifies the original source and binary asset hashes. `scripts/sylva-business.js` connects hero controls to real homepage sections; standalone template use retains the accessible work, about, and contact dialogs. Run `pnpm build:sylva` after editing. Authored scene scripts and styles are asserted unchanged.
+- `scripts/build-sublevel.mjs` and `scripts/sublevel-runtime-content.mjs` retain the old template's content generation. `pnpm dev` and `pnpm build` regenerate both templates automatically.
+- `vendor/threeui/upstream/` archives the verified registered source files. See `vendor/threeui/README.md` for hashes and frame adaptations. Do not edit the generated `public/landing-pages/inner-green-3d.html` or `sublevel-studio.html` directly.
 - `lib/content.ts`: profile links, projects, skills, services and article content.
 - `components/video-project-card.tsx`: reusable `VideoProjectCard` and `ProjectVideo` components. Project props include title, description, techStack, loomVideoId, liveLink and githubLink, plus slug, image, category and color for presentation.
 - Set `loomVideoId` to a real Loom ID or a supported HTTPS Loom / YouTube embed / Vimeo player URL. The iframe mounts only after Play, uses `loading="lazy"`, and reserves its aspect ratio. There are no third-party video requests on the initial page load.
@@ -31,11 +33,11 @@ On Vercel, `vercel.json` redirects the iframe's `/landing-pages/sublevel-studio.
 
 The supplied profile is the source for experience and contact information. KeyBuilds, Sky Events and Job Elite are explicitly marked sample case studies as requested. Fittra is grounded in the profile. All covers are illustrative and are not actual application screenshots. No performance metrics, testimonials, client outcomes or project URLs were invented. Journal posts are starter editorial content to review before public use.
 
-The new homepage enquiry form validates an email address and opens a populated email draft, with an accessible validation message and fallback email link. The preserved legacy form uses React Hook Form and Zod. Visitors must send the draft in their email client; neither form claims server delivery or stores inquiries. Static export currently has no server runtime.
+The contact section includes Ahmed's email, GitHub, LinkedIn, and a form that prepares an email draft with native field validation. The visitor reviews and sends the draft in their email client; the site does not claim to deliver a message. Sylva's play-shaped control opens the Fittra case study. The preserved standalone hero keeps its contact dialog; older homepages keep their original forms. Static export has no server runtime or inquiry storage.
 
-The ThreeUI homepage retains its authored scene and interactions, with local fonts and pinned Three.js 0.160 dependencies. The older pages retain their self-hosted fonts and existing motion settings.
+Sylva retains the authored moss, flowers, ferns, pollen, butterfly, liquid-metal controls, and responsive behavior. Its local Three.js runtime, Lexend font, and two atmospheric nature photographs are copied byte-for-byte from the registered source. The photographs illustrate the theme; they are not project screenshots. The author's narrow-screen layout intentionally omits the butterfly. Sublevel retains its pinned Three.js 0.160 dependencies; older pages retain their own motion settings.
 
-## Homepage performance
+## Preserved Sublevel performance
 
 The generator splits the former 2.46 MB inline document into approximately 30 KB of HTML and separate cacheable assets. A small preview captured from the actual scene appears while the interactive lobby initializes. Models load as binary GLB files; below-the-fold images load lazily with their dimensions reserved.
 
@@ -74,4 +76,4 @@ Images are concept covers; confirm third-party usage rights or replace them with
 
 ## Verification
 
-Next.js production export and TypeScript checks pass. The new homepage was checked in Chrome at desktop and mobile sizes: lobby rendering, arcade play, basketball shooting, CRT browsing, terminal open/close, animated menu navigation, email validation and draft construction, project navigation, and the existing `/#contact` deep link. Changed files pass ESLint; the full lint run still reports pre-existing errors in the older portfolio files. No Lighthouse score is claimed.
+Next.js production export and TypeScript checks pass. The expanded site was checked in Chrome at 1440px, 390px, and 320px widths: rendered hero, section navigation and focus, contact deep links, FAQ disclosures, all project/article routes, and article contents links. Mobile menu selection, Escape/focus return, contact validation, populated email drafts, and fallback links also passed; email app launches were intercepted during testing. The mobile hero fits its frame without a nested vertical scroll. A local server emulated the Vercel redirects; route checks found no horizontal overflow, failed requests, or JavaScript errors. Standalone hero dialogs were also checked with a parent-frame fixture. Every generation verifies the source and binary hashes and preserves all authored script/style blocks. Changed files pass ESLint; previously recorded lint errors in older portfolio files remain outside this change. No Lighthouse score is claimed.

@@ -1,0 +1,14 @@
+.frame {
+  width: 100%;
+  height: 100vh;
+  height: max(100svh, calc(min(100vw, 1900px) * 0.55));
+  padding: 0;
+  overflow: hidden;
+  background: #4a4d44;
+}
+
+@media (max-width: 900px) {
+  .frame {
+    height: max(100svh, calc(100vw * 1625 / 760));
+  }
+}

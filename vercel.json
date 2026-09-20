@@ -2,6 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     {
+      "source": "/landing-pages/inner-green-3d.html",
+      "destination": "/landing-pages/inner-green-3d/",
+      "permanent": true
+    },
+    {
       "source": "/landing-pages/sublevel-studio.html",
       "destination": "/landing-pages/sublevel-studio/",
       "permanent": true

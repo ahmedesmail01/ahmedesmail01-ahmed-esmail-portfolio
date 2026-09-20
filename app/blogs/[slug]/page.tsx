@@ -1,8 +1,102 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import {notFound} from 'next/navigation';
-import {ArrowLeft,ArrowUpRight} from 'lucide-react';
-import {posts} from '@/lib/content';
-import {Header,Footer} from '@/components/site-shell';
-export function generateStaticParams(){return posts.map(p=>({slug:p.slug}));}
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const p=posts.find(p=>p.slug===slug);return {title:p?.title??'Article not found',description:p?.intro};}
-export default async function Blog({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const p=posts.find(p=>p.slug===slug);if(!p)notFound();return <><Header/><main className="wrap article-page"><Link className="back-link" href="/blogs"><ArrowLeft size={16}/> All field notes</Link><article><header><p className="eyebrow">{p.category} / {p.read}</p><h1>{p.title}</h1><p className="article-lead">{p.intro}</p><p className="eyebrow">AHMED ESMAIL · ENGINEERING JOURNAL</p></header><img className="article-image" src={p.image} width="1200" height="650" alt="Illustrative editorial photograph"/><div className="prose-content">{p.sections.map(([heading,text])=><section key={heading}><h2>{heading}</h2><p>{text}</p></section>)}<div className="article-cta"><h3>Working through a similar challenge?</h3><Link className="text-link" href="/#contact">Let's talk about your product <ArrowUpRight size={18}/></Link></div></div></article></main><Footer/></>}
+import { notFound } from 'next/navigation';
+import { posts } from '@/lib/content';
+import {
+  SylvaShell,
+  PageIntro,
+  JournalCard,
+  ContactSection,
+  SectionHeading,
+} from '@/components/sylva/site';
+import styles from '@/components/sylva/sylva.module.css';
+
+export function generateStaticParams() {
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = posts.find((item) => item.slug === slug);
+  return { title: post?.title ?? 'Article not found', description: post?.intro };
+}
+
+function sectionId(heading: string) {
+  return heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = posts.find((item) => item.slug === slug);
+  if (!post) notFound();
+
+  const relatedPosts = posts.filter((item) => item.slug !== post.slug);
+
+  return (
+    <SylvaShell active="journal">
+      <main id="main-content">
+        <article>
+          <div className={styles.container}>
+            <Link className={styles.backLink} href="/blogs/">← Back to the journal</Link>
+          </div>
+          <PageIntro
+            eyebrow={`${post.category} / ${post.read}`}
+            title={post.title}
+            description={post.intro}
+          >
+            <p className={styles.eyebrow}>BY AHMED ESMAIL / ENGINEERING JOURNAL</p>
+          </PageIntro>
+          <div className={styles.container}>
+            <figure>
+              <Image
+                className={styles.cover}
+                src={post.image}
+                alt=""
+                width={1600}
+                height={900}
+                priority
+                sizes="(max-width: 760px) 100vw, 90vw"
+              />
+              <figcaption className={styles.caption}>An illustrative image from the portfolio.</figcaption>
+            </figure>
+            <div className={styles.articleLayout}>
+              <aside className={styles.articleToc} aria-label="In this article">
+                <p className={styles.eyebrow}>IN THIS NOTE</p>
+                <nav aria-label="Article sections">
+                  <ol>
+                    {post.sections.map(([heading]) => (
+                      <li key={heading}><a href={`#${sectionId(heading)}`}>{heading}</a></li>
+                    ))}
+                  </ol>
+                </nav>
+                <p className={styles.caption}>{post.read} · Ahmed Esmail</p>
+              </aside>
+              <div className={`${styles.articleBody} ${styles.prose}`}>
+                {post.sections.map(([heading, text], index) => (
+                  <section id={sectionId(heading)} key={heading}>
+                    <p className={styles.eyebrow}>{String(index + 1).padStart(2, '0')}</p>
+                    <h2>{heading}</h2>
+                    <p>{text}</p>
+                  </section>
+                ))}
+                <p className={styles.sectionNote}>
+                  A note by Ahmed Esmail, full-stack engineer working across frontend experiences,
+                  connected systems, and deployment.
+                </p>
+              </div>
+            </div>
+          </div>
+        </article>
+        <section className={`${styles.container} ${styles.section}`} aria-label="More from the journal">
+          <SectionHeading eyebrow="KEEP EXPLORING" title="Another thought to take with you." />
+          <div className={styles.journalGrid}>
+            {relatedPosts.map((related, index) => (
+              <JournalCard key={related.slug} post={related} index={index} />
+            ))}
+          </div>
+        </section>
+        <ContactSection />
+      </main>
+    </SylvaShell>
+  );
+}

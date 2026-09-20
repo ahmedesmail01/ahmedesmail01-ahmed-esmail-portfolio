@@ -1,0 +1,210 @@
+.root {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 48px;
+  color: #eef0e8;
+  font-family: inherit;
+}
+
+.root .navigation {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: auto;
+  min-height: 50px;
+  padding: 0;
+  border: 0;
+}
+
+.root .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -.03em;
+  text-decoration: none;
+}
+
+.root .monogram {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #b7c0ac;
+  border-radius: 50%;
+  background: #e3e8da;
+  color: #35412e;
+  font-size: 14px;
+  letter-spacing: -.065em;
+}
+
+.root .brandNote {
+  display: block;
+  margin-top: 2px;
+  color: #c5cabf;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0;
+}
+
+.root .desktopLinks {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border: 1px solid #c6cebc;
+  border-radius: 999px;
+  background: #e7ebdf;
+  color: #4a5441;
+  font-size: 12px;
+}
+
+.root .desktopLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 8px 17px;
+  border-radius: 999px;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.root .desktopLinks a:hover,
+.root .desktopLinks a[aria-current="page"] {
+  background: #4a4d44;
+  color: #f1f2eb;
+}
+
+.root .contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid #e3e8da;
+  border-radius: 999px;
+  background: #e3e8da;
+  color: #35412e;
+  font-size: 12px;
+  transition: background 180ms ease;
+}
+
+.root .contact:hover {
+  background: #f1f2eb;
+}
+
+.root .toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #b7c0ac;
+  border-radius: 50%;
+  background: #e3e8da;
+  color: #35412e;
+  cursor: pointer;
+}
+
+.root .mobileLinks {
+  display: none;
+  width: 100%;
+  padding: 8px 20px;
+  border: 1px solid #c6cebc;
+  border-radius: 20px;
+  background: #e7ebdf;
+  color: #35412e;
+  font-size: 14px;
+}
+
+.root .mobileLinks a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 52px;
+  padding: 12px 0;
+  border-bottom: 1px solid #c6cebc;
+}
+
+.root .mobileLinks a:last-child {
+  border-bottom: 0;
+}
+
+.root .mobileLinks a[aria-current="page"] {
+  font-weight: 500;
+}
+
+.root a:focus-visible,
+.root button:focus-visible {
+  outline: 2px solid #eef0e8;
+  outline-offset: 4px;
+}
+
+.root .desktopLinks a:focus-visible,
+.root .mobileLinks a:focus-visible {
+  outline-color: #354b28;
+}
+
+@media (max-width: 960px) {
+  .root {
+    padding: 22px 32px;
+  }
+
+  .root .brandNote {
+    display: none;
+  }
+
+  .root .desktopLinks a {
+    padding-inline: 13px;
+  }
+}
+
+@media (max-width: 760px) {
+  .root {
+    padding: 20px 24px;
+  }
+
+  .root .navigation {
+    gap: 16px;
+  }
+
+  .root .desktopLinks,
+  .root .contact {
+    display: none;
+  }
+
+  .root .toggle {
+    display: inline-flex;
+  }
+
+  .root .mobileLinks {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .root .mobileLinks[hidden] {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .root {
+    padding-inline: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root a {
+    transition: none;
+  }
+}

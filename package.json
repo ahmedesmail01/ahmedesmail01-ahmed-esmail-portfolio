@@ -7,9 +7,10 @@
   },
   "scripts": {
     "build:sublevel": "node --experimental-strip-types scripts/build-sublevel.mjs",
+    "build:sylva": "node --experimental-strip-types scripts/build-sylva.mjs",
     "install:ci": "bash scripts/install-pnpm.sh",
-    "dev": "node --experimental-strip-types scripts/build-sublevel.mjs && node scripts/dev-next.mjs",
-    "build": "node --experimental-strip-types scripts/build-sublevel.mjs && next build --webpack",
+    "dev": "node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && node scripts/dev-next.mjs",
+    "build": "node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && next build --webpack",
     "start": "next dev --hostname 0.0.0.0 --port 5173",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"

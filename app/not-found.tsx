@@ -1,2 +1,18 @@
-import Link from 'next/link';
-export default function NotFound(){return <main className="wrap page-hero"><p className="eyebrow">404 / NOTHING HERE YET</p><h1>A little<br/><span className="serif">off the path.</span></h1><Link href="/" className="pill">Back to the portfolio ↗</Link></main>}
+import { SylvaShell, PageIntro, ActionLink } from '@/components/sylva/site';
+
+export default function NotFound() {
+  return (
+    <SylvaShell>
+      <main id="main-content">
+        <PageIntro
+          eyebrow="404 / A LITTLE OFF THE PATH"
+          title="Let’s find your way back."
+          description="This page may have moved, or the address might be a little different. There’s still plenty to explore."
+        >
+          <ActionLink href="/">Back to the portfolio</ActionLink>
+          <ActionLink href="/project/" secondary>Explore the work</ActionLink>
+        </PageIntro>
+      </main>
+    </SylvaShell>
+  );
+}

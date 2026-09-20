@@ -1,8 +1,69 @@
-import Link from 'next/link';
-import {ArrowUpRight,Globe,ShoppingBag,BookOpen,Users,Workflow,Layers,Code2,Gauge,Check} from 'lucide-react';
-import {Header,Footer} from '@/components/site-shell';
-import {Reveal} from '@/components/motion';
-import {services} from '@/lib/content';
-export const metadata={title:'Development services',description:'Websites, e-commerce, LMS, CRM, ERP modules, enterprise workflows, APIs and deployment by Ahmed Esmail.'};
-const icons=[Globe,ShoppingBag,BookOpen,Users,Workflow,Layers,Code2,Gauge];
-export default function Services(){return <><Header/><main className="wrap"><section className="page-hero"><p className="eyebrow">SERVICES / FROM IDEA TO PRODUCTION</p><h1>Built for your business.<br/><span className="serif">Made for your people.</span></h1><p>One engineering partner for the experience your customers see and the systems your team depends on.</p><Link className="pill" href="/#contact">Let's discuss your project <ArrowUpRight size={18}/></Link></section><div className="services-grid">{services.map((s,i)=>{const Icon=icons[i];return <Reveal key={s.title}><article className="service-detail"><div className="service-top"><Icon size={32}/><span>0{i+1}</span></div><p className="eyebrow">{s.tag}</p><h2>{s.title}</h2><p>{s.description}</p><ul className="feature-list">{s.items.map(t=><li key={t}><Check size={16}/>{t}</li>)}</ul><Link className="text-link" href={`/#contact`}>Discuss this service <ArrowUpRight size={18}/></Link></article></Reveal>})}</div><section className="service-end"><p className="eyebrow">YOUR NEEDS COME FIRST</p><h2>Start with the problem.<br/><span className="serif">We'll find the right build.</span></h2><p>Every engagement starts with a clear scope, practical milestones, and a technology choice that fits your product. ERP work is scoped as focused modules and integrations, with specialist requirements agreed up front.</p><Link className="pill" href="/#contact">Tell me what you need <ArrowUpRight size={18}/></Link></section></main><Footer/></>}
+import type { Metadata } from 'next';
+import { BookOpen, Code2, Gauge, Globe, Layers, ShoppingBag, Users, Workflow } from 'lucide-react';
+import { services } from '@/lib/content';
+import {
+  SylvaShell,
+  PageIntro,
+  ActionLink,
+  ContactSection,
+  ProcessSection,
+  SectionHeading,
+} from '@/components/sylva/site';
+import styles from '@/components/sylva/sylva.module.css';
+
+export const metadata: Metadata = {
+  title: 'Development services',
+  description:
+    'Websites, e-commerce, LMS, CRM, ERP modules, APIs, performance, and deployment services by Ahmed Esmail.',
+};
+
+const serviceIcons = [Globe, ShoppingBag, BookOpen, Users, Workflow, Layers, Code2, Gauge];
+
+export default function ServicesPage() {
+  return (
+    <SylvaShell active="services">
+      <main id="main-content">
+        <PageIntro
+          eyebrow="SERVICES / FROM FIRST IDEA TO WHAT’S NEXT"
+          title="The right foundation for your next chapter."
+          description="Thoughtful interfaces, connected systems, and a practical path to production. Development shaped around your business and the people who use it."
+        >
+          <ActionLink href="/#contact">Let’s discuss your project</ActionLink>
+        </PageIntro>
+        <section className={`${styles.container} ${styles.section}`} aria-label="Development services">
+          <SectionHeading
+            eyebrow="HOW I CAN HELP"
+            title="Built around what you need."
+            description="Start with a single landing page, a focused integration, or a custom product. We’ll agree on the scope and choose a build that makes sense for your goals."
+          />
+          <div className={styles.serviceGrid}>
+            {services.map((service, index) => {
+              const Icon = serviceIcons[index];
+              return (
+                <article className={styles.serviceCard} key={service.title}>
+                  <div className={styles.serviceNumber}>
+                    <Icon className={styles.serviceIcon} size={28} strokeWidth={1.3} aria-hidden="true" />
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                  </div>
+                  <p className={styles.eyebrow}>{service.tag}</p>
+                  <h2>{service.title}</h2>
+                  <p>{service.description}</p>
+                  <ul className={styles.featureList}>
+                    {service.items.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                  <ActionLink href="/#contact" secondary>Discuss this service</ActionLink>
+                </article>
+              );
+            })}
+          </div>
+          <p className={styles.sectionNote}>
+            ERP work is scoped as focused modules and integrations, with specialist requirements
+            agreed before development begins.
+          </p>
+        </section>
+        <ProcessSection />
+        <ContactSection />
+      </main>
+    </SylvaShell>
+  );
+}

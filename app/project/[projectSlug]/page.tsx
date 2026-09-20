@@ -1,9 +1,106 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import {notFound} from 'next/navigation';
-import {ArrowLeft,ArrowUpRight,Check} from 'lucide-react';
-import {projects} from '@/lib/content';
-import {Header,Footer} from '@/components/site-shell';
-import {ProjectVideo} from '@/components/video-project-card';
-export function generateStaticParams(){return projects.map(p=>({projectSlug:p.slug}));}
-export async function generateMetadata({params}:{params:Promise<{projectSlug:string}>}){const {projectSlug}=await params;const p=projects.find(p=>p.slug===projectSlug);return {title:p?.title??'Project not found',description:p?.description};}
-export default async function ProjectPage({params}:{params:Promise<{projectSlug:string}>}){const {projectSlug}=await params;const p=projects.find(p=>p.slug===projectSlug);if(!p)notFound();const next=projects[(projects.indexOf(p)+1)%projects.length];return <><Header/><main className="wrap detail-page"><Link className="back-link" href="/#work"><ArrowLeft size={16}/> Back to selected work</Link><div className="detail-heading"><p className="eyebrow">{p.category} {p.sample?' / SAMPLE CASE STUDY':''}</p><h1>{p.title}<span className="lime">.</span></h1><p>{p.description}</p></div><ProjectVideo {...p} large/><div className="detail-body"><aside><p className="eyebrow">THE STACK</p><div className="tags">{p.techStack.map(t=><span key={t}>{t}</span>)}</div><p className="media-note">Illustrative cover. Project walkthrough coming soon.</p>{p.liveLink&&<a className="text-link" href={p.liveLink} target="_blank" rel="noreferrer">Visit live site <ArrowUpRight size={18}/></a>}{p.githubLink&&<a className="text-link" href={p.githubLink} target="_blank" rel="noreferrer">View source <ArrowUpRight size={18}/></a>}</aside><article><p className="eyebrow">OVERVIEW</p><h2>{p.sample?'The concept.':'The work.'}<br/><span className="serif">The details that matter.</span></h2><p>{p.overview}</p><h3>{p.sample?'Proposed experience':'Areas of contribution'}</h3><ul className="feature-list">{p.features.map(f=><li key={f}><Check size={18}/>{f}</li>)}</ul><Link className="pill" href="/#contact">Build something like this <ArrowUpRight size={18}/></Link></article></div><Link className="next-project" href={`/project/${next.slug}`}><div><p className="eyebrow">NEXT PROJECT</p><h2>{next.title}</h2></div><ArrowUpRight size={55}/></Link></main><Footer/></>}
+import { notFound } from 'next/navigation';
+import { projects } from '@/lib/content';
+import {
+  SylvaShell,
+  PageIntro,
+  ActionLink,
+  ContactSection,
+} from '@/components/sylva/site';
+import styles from '@/components/sylva/sylva.module.css';
+
+export function generateStaticParams() {
+  return projects.map((project) => ({ projectSlug: project.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ projectSlug: string }> }) {
+  const { projectSlug } = await params;
+  const project = projects.find((item) => item.slug === projectSlug);
+  return { title: project?.title ?? 'Project not found', description: project?.description };
+}
+
+export default async function ProjectPage({ params }: { params: Promise<{ projectSlug: string }> }) {
+  const { projectSlug } = await params;
+  const project = projects.find((item) => item.slug === projectSlug);
+  if (!project) notFound();
+
+  const orderedProjects = [...projects].sort((a, b) => Number(a.sample) - Number(b.sample));
+  const nextProject = orderedProjects[(orderedProjects.indexOf(project) + 1) % orderedProjects.length];
+
+  return (
+    <SylvaShell active="work">
+      <main id="main-content">
+        <div className={styles.container}>
+          <Link href="/project/" className={styles.backLink}>← All selected work</Link>
+        </div>
+        <PageIntro
+          eyebrow={`${project.category} / ${project.sample ? 'CONCEPT STUDY' : 'FRONTEND CONTRIBUTION'}`}
+          title={project.title}
+          description={project.description}
+        >
+          <div className={styles.tags} aria-label="Technology stack">
+            {project.techStack.map((technology) => <span key={technology}>{technology}</span>)}
+          </div>
+        </PageIntro>
+        <div className={styles.container}>
+          <figure>
+            <Image
+              className={styles.cover}
+              src={project.image}
+              alt={`Illustrative cover for ${project.title}`}
+              width={1600}
+              height={900}
+              priority
+              sizes="(max-width: 760px) 100vw, 90vw"
+            />
+            <figcaption className={styles.caption}>
+              Illustrative cover · {project.sample ? 'Concept study.' : 'Frontend contribution to the Fittra ecosystem.'}
+            </figcaption>
+          </figure>
+          <section className={styles.detailGrid} aria-labelledby="project-overview">
+            <aside className={styles.detailAside}>
+              <p className={styles.eyebrow}>AT A GLANCE</p>
+              <dl>
+                <dt>Focus</dt><dd>{project.category}</dd>
+                <dt>Project type</dt><dd>{project.sample ? 'Independent concept study' : 'Frontend development contribution'}</dd>
+                <dt>Tools & technologies</dt>
+                <dd className={styles.tags}>{project.techStack.map((technology) => <span key={technology}>{technology}</span>)}</dd>
+              </dl>
+              {project.liveLink && (
+                <a className={styles.backLink} href={project.liveLink} target="_blank" rel="noreferrer">Visit the live site ↗</a>
+              )}
+              {project.githubLink && (
+                <a className={styles.backLink} href={project.githubLink} target="_blank" rel="noreferrer">Explore the source ↗</a>
+              )}
+            </aside>
+            <article className={`${styles.detailArticle} ${styles.prose}`}>
+              <p className={styles.eyebrow}>{project.sample ? 'THE EXPLORATION' : 'THE CONTRIBUTION'}</p>
+              <h2 id="project-overview">{project.sample ? 'A possibility worth exploring.' : 'Connecting the learning experience.'}</h2>
+              <p>{project.overview}</p>
+              <h3>{project.sample ? 'The proposed experience' : 'Where I contributed'}</h3>
+              <ul className={styles.featureList}>
+                {project.features.map((feature) => <li key={feature}>{feature}</li>)}
+              </ul>
+              <p className={styles.sectionNote}>
+                {project.sample
+                  ? 'This study explores a proposed product experience and the technical approach behind it.'
+                  : 'My role centers on the frontend, state management, and integrations described here within the wider Fittra product ecosystem.'}
+              </p>
+              <ActionLink href="/#contact">Have a similar project in mind?</ActionLink>
+            </article>
+          </section>
+          <Link className={styles.nextProject} href={`/project/${nextProject.slug}/`}>
+            <div>
+              <p className={styles.eyebrow}>NEXT {nextProject.sample ? 'CONCEPT STUDY' : 'PROJECT'}</p>
+              <h2>{nextProject.title}</h2>
+              <p>{nextProject.description}</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+        <ContactSection />
+      </main>
+    </SylvaShell>
+  );
+}

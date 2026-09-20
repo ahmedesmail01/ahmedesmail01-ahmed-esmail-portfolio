@@ -1,0 +1,151 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+  min-width: 0;
+  color: #35412e;
+  font-family: inherit;
+}
+
+.root .row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.root label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  color: #48523f;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.root input,
+.root textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 14px 16px;
+  border: 1px solid #bcc5b2;
+  border-radius: 14px;
+  background: #ffffff40;
+  box-shadow: none;
+  color: #35412e;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.root textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.root input::placeholder,
+.root textarea::placeholder {
+  color: #707b65;
+  opacity: 1;
+}
+
+.root input:focus,
+.root textarea:focus {
+  border-color: #667a53;
+  outline: 2px solid #667a5338;
+  outline-offset: 2px;
+  background: #ffffff70;
+}
+
+.root .bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.root .bottom p {
+  margin: 0;
+  color: #6b7461;
+  font-size: 11px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.root button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 14px 22px;
+  border: 1px solid #4a4d44;
+  border-radius: 999px;
+  background: #4a4d44;
+  color: #f1f2eb;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background 180ms ease;
+}
+
+.root button:hover {
+  background: #35412e;
+}
+
+.root button:focus-visible,
+.root a:focus-visible {
+  outline: 2px solid #354b28;
+  outline-offset: 4px;
+}
+
+.root .feedback p {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid #c0cbb4;
+  border-radius: 14px;
+  background: #e5ecdc;
+  color: #35412e;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.root .feedback a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .root .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .root input,
+  .root textarea {
+    font-size: 16px;
+  }
+
+  .root .bottom {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root input,
+  .root textarea,
+  .root button {
+    transition: none;
+  }
+}

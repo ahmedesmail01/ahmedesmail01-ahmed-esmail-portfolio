@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
+import {
+  applyPageCustomization,
+  postPageCustomization,
+  type LandingPageCustomization,
+} from "./pageTypography";
+
 export type LandingPageFrameProps = {
   /**
    * CSS selector for the authored visual layer when a complete page is reused
@@ -19,6 +25,11 @@ export type LandingPageFrameProps = {
   style?: CSSProperties;
   title: string;
   /**
+   * Typography and colour overrides, appended to the loaded document's own
+   * head. The packaged file is never rewritten, so it stays byte-exact.
+   */
+  customization?: LandingPageCustomization;
+  /**
    * Runs against the live frame on every load and whenever the callback's own
    * identity changes, which is how a page that exposes a scene API of its own
    * receives slider values. Memoize it on the values it reads.
@@ -28,7 +39,7 @@ export type LandingPageFrameProps = {
 
 export type LandingPageProps = Omit<
   LandingPageFrameProps,
-  "sourceUrl" | "title" | "backgroundCanvasSelector" | "backgroundVisualSelector"
+  "sourceUrl" | "title" | "customization" | "backgroundCanvasSelector" | "backgroundVisualSelector"
 >;
 
 const URL_FRAME_SANDBOX = "allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation";
@@ -110,6 +121,7 @@ export function LandingPageFrame({
   backgroundCanvasSelector,
   backgroundVisualSelector,
   className = "",
+  customization,
   sourceUrl,
   srcDoc,
   style,
@@ -121,9 +133,11 @@ export function LandingPageFrame({
   // Re-applied on every change; the load handler covers the first paint and
   // any navigation the page does inside its own frame.
   useEffect(() => {
+    applyPageCustomization(frameRef.current, customization);
+    postPageCustomization(frameRef.current, customization);
     applyBackgroundPresentation(frameRef.current, backgroundCanvasSelector, backgroundVisualSelector);
     if (frameRef.current) applyScene?.(frameRef.current);
-  }, [applyScene, backgroundCanvasSelector, backgroundVisualSelector]);
+  }, [applyScene, backgroundCanvasSelector, backgroundVisualSelector, customization]);
 
   return (
     <div
@@ -138,6 +152,8 @@ export function LandingPageFrame({
         sandbox={srcDoc ? SRCDOC_FRAME_SANDBOX : URL_FRAME_SANDBOX}
         loading="eager"
         onLoad={(event) => {
+          applyPageCustomization(event.currentTarget, customization);
+          postPageCustomization(event.currentTarget, customization);
           applyBackgroundPresentation(event.currentTarget, backgroundCanvasSelector, backgroundVisualSelector);
           applyScene?.(event.currentTarget);
           setReady(true);
