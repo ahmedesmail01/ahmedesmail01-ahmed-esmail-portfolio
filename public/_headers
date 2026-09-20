@@ -3,8 +3,17 @@
 /landing-pages/assets/*
   Cache-Control: public, max-age=31536000, immutable
 
+/images/responsive/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/landing-pages/inner-green-assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
 /landing-pages/runtime/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
 /landing-pages/sublevel-studio.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/landing-pages/inner-green-3d.html
   Cache-Control: public, max-age=0, must-revalidate

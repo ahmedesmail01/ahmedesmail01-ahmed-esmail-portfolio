@@ -7,13 +7,15 @@
   },
   "scripts": {
     "build:sublevel": "node --experimental-strip-types scripts/build-sublevel.mjs",
-    "build:sylva": "node --experimental-strip-types scripts/build-sylva.mjs",
+    "build:sylva": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sylva.mjs",
     "install:ci": "bash scripts/install-pnpm.sh",
-    "dev": "node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && node scripts/dev-next.mjs",
-    "build": "node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && next build --webpack",
-    "start": "next dev --hostname 0.0.0.0 --port 5173",
+    "dev": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && node scripts/dev-next.mjs",
+    "build": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && next build --webpack",
+    "start": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && next dev --hostname 0.0.0.0 --port 5173",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "build:images": "node --experimental-strip-types scripts/build-images.mjs",
+    "test:performance": "node --test scripts/sylva-performance.test.mjs"
   },
   "dependencies": {
     "@designcodeio/threeui": "file:vendor/threeui",
@@ -68,7 +70,8 @@
     "typescript": "5.9.3",
     "vinext": "1.0.0-beta.5",
     "vite": "8.0.13",
-    "wrangler": "4.92.0"
+    "wrangler": "4.92.0",
+    "sharp": "0.35.4"
   },
   "type": "module",
   "overrides": {

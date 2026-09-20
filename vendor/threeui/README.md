@@ -62,10 +62,23 @@ typography and recipe sources remain in `upstream/`.
 
 `scripts/build-sylva.mjs` starts from the verified canonical HTML, changes business
 copy and destinations, and appends the application's native dialog panels. Every
-authored script and stylesheet is asserted unchanged. A base URL makes the original
-relative assets work with Vercel's clean URL redirect. The two photographs, local
-Three runtime, and Lexend WOFF2 in `public/landing-pages/inner-green-assets/` are
-verified byte-for-byte on every generation.
+authored script and stylesheet is verified before `scripts/sylva-performance-runtime.mjs`
+derives visibility-aware scheduling, idle reduced-motion rendering and deferred,
+content-hashed script/style assets. Pointer measurements are coalesced per frame;
+hidden buttons initialize their WebGL effects only when visible. The parent frame
+communicates visibility so offscreen iframes stop their render loops. Geometry setup
+yields between stages to keep navigation responsive. The image build supplies
+responsive WebP card images. A base URL makes the original relative assets work with
+Vercel's clean URL redirect. The original two photographs, local Three runtime, and
+Lexend WOFF2 in `public/landing-pages/inner-green-assets/` are verified byte-for-byte on
+every generation; the archive stays untouched.
+
+Run the image generator before generating Sylva so its responsive image manifest
+and files exist: `node scripts/build-images.mjs`, then
+`node --experimental-strip-types scripts/build-sylva.mjs`. The normal application
+build does this automatically. `node --test scripts/sylva-performance.test.mjs`
+checks playback suspension/resumption, reduced-motion scheduling and generated
+asset integrity.
 
 The MIT license is copied from the published `@designcodeio/threeui@1.2.0`
 package. The registered source hashes above identify the actual implementation

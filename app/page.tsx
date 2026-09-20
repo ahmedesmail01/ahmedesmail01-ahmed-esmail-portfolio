@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { ResponsiveImage } from '@/components/responsive-image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { projects, posts, services, skills } from '@/lib/content';
@@ -49,7 +49,8 @@ export default function Home() {
         <section id="about" tabIndex={-1} className={`${styles.container} ${styles.section}`}>
           <div className={styles.aboutGrid}>
             <div className={styles.aboutImage}>
-              <Image src="/landing-pages/inner-green-assets/card-ethos.jpg" alt="" width={700} height={850} sizes="(max-width: 760px) 100vw, 50vw" />
+              {/* Account for the portrait crop of this landscape source when selecting a resolution. */}
+              <ResponsiveImage src="/landing-pages/inner-green-assets/card-ethos.jpg" alt="" sizes="(max-width: 760px) 690px, (max-width: 1100px) 780px, 840px" />
               <div><p className={styles.eyebrow}>CURIOUS BY NATURE. PRACTICAL BY DESIGN.</p><p>Room for ideas.<br />Roots for growth.</p></div>
             </div>
             <div className={styles.aboutCopy}>

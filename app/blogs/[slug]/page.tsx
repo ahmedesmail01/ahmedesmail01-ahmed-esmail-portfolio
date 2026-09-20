@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { ResponsiveImage } from '@/components/responsive-image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { posts } from '@/lib/content';
@@ -48,14 +48,12 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
           </PageIntro>
           <div className={styles.container}>
             <figure>
-              <Image
+              <ResponsiveImage
                 className={styles.cover}
                 src={post.image}
                 alt=""
-                width={1600}
-                height={900}
                 priority
-                sizes="(max-width: 760px) 100vw, 90vw"
+                sizes="(max-width: 400px) calc(100vw - 36px), (max-width: 760px) calc(100vw - 44px), (max-width: 1100px) calc(100vw - 64px), (max-width: 1416px) calc(100vw - 96px), (min-width: 1600px) 1368px, 1320px"
               />
               <figcaption className={styles.caption}>An illustrative image from the portfolio.</figcaption>
             </figure>

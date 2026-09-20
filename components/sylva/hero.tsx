@@ -1,5 +1,3 @@
-"use client";
-
 import { SylvaHero } from "@designcodeio/threeui";
 import "@designcodeio/threeui/style.css";
 import styles from "./hero.module.css";

@@ -1,0 +1,172 @@
+{
+  "/images/events.webp": {
+    "width": 1400,
+    "height": 934,
+    "src": "/images/responsive/events-3be5657ece58-768.webp",
+    "variants": [
+      {
+        "width": 384,
+        "src": "/images/responsive/events-3be5657ece58-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/events-3be5657ece58-640.webp"
+      },
+      {
+        "width": 768,
+        "src": "/images/responsive/events-3be5657ece58-768.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/images/responsive/events-3be5657ece58-1024.webp"
+      },
+      {
+        "width": 1280,
+        "src": "/images/responsive/events-3be5657ece58-1280.webp"
+      },
+      {
+        "width": 1400,
+        "src": "/images/responsive/events-3be5657ece58-1400.webp"
+      }
+    ]
+  },
+  "/images/keyboard.webp": {
+    "width": 1200,
+    "height": 900,
+    "src": "/images/responsive/keyboard-8503ab9efb55-768.webp",
+    "variants": [
+      {
+        "width": 384,
+        "src": "/images/responsive/keyboard-8503ab9efb55-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/keyboard-8503ab9efb55-640.webp"
+      },
+      {
+        "width": 768,
+        "src": "/images/responsive/keyboard-8503ab9efb55-768.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/images/responsive/keyboard-8503ab9efb55-1024.webp"
+      },
+      {
+        "width": 1200,
+        "src": "/images/responsive/keyboard-8503ab9efb55-1200.webp"
+      }
+    ]
+  },
+  "/images/learning.webp": {
+    "width": 1400,
+    "height": 934,
+    "src": "/images/responsive/learning-dd96401558da-768.webp",
+    "variants": [
+      {
+        "width": 384,
+        "src": "/images/responsive/learning-dd96401558da-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/learning-dd96401558da-640.webp"
+      },
+      {
+        "width": 768,
+        "src": "/images/responsive/learning-dd96401558da-768.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/images/responsive/learning-dd96401558da-1024.webp"
+      },
+      {
+        "width": 1280,
+        "src": "/images/responsive/learning-dd96401558da-1280.webp"
+      },
+      {
+        "width": 1400,
+        "src": "/images/responsive/learning-dd96401558da-1400.webp"
+      }
+    ]
+  },
+  "/images/workspace.webp": {
+    "width": 1200,
+    "height": 800,
+    "src": "/images/responsive/workspace-682f1b807528-768.webp",
+    "variants": [
+      {
+        "width": 384,
+        "src": "/images/responsive/workspace-682f1b807528-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/workspace-682f1b807528-640.webp"
+      },
+      {
+        "width": 768,
+        "src": "/images/responsive/workspace-682f1b807528-768.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/images/responsive/workspace-682f1b807528-1024.webp"
+      },
+      {
+        "width": 1200,
+        "src": "/images/responsive/workspace-682f1b807528-1200.webp"
+      }
+    ]
+  },
+  "/landing-pages/inner-green-assets/card-ecostove.jpg": {
+    "width": 1200,
+    "height": 600,
+    "src": "/images/responsive/card-ecostove-d11aa166f239-768.webp",
+    "variants": [
+      {
+        "width": 384,
+        "src": "/images/responsive/card-ecostove-d11aa166f239-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/card-ecostove-d11aa166f239-640.webp"
+      },
+      {
+        "width": 768,
+        "src": "/images/responsive/card-ecostove-d11aa166f239-768.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/images/responsive/card-ecostove-d11aa166f239-1024.webp"
+      },
+      {
+        "width": 1200,
+        "src": "/images/responsive/card-ecostove-d11aa166f239-1200.webp"
+      }
+    ]
+  },
+  "/landing-pages/inner-green-assets/card-ethos.jpg": {
+    "width": 1200,
+    "height": 800,
+    "src": "/images/responsive/card-ethos-12e755fad7b8-768.webp",
+    "variants": [
+      {
+        "width": 384,
+        "src": "/images/responsive/card-ethos-12e755fad7b8-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/card-ethos-12e755fad7b8-640.webp"
+      },
+      {
+        "width": 768,
+        "src": "/images/responsive/card-ethos-12e755fad7b8-768.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/images/responsive/card-ethos-12e755fad7b8-1024.webp"
+      },
+      {
+        "width": 1200,
+        "src": "/images/responsive/card-ethos-12e755fad7b8-1200.webp"
+      }
+    ]
+  }
+}

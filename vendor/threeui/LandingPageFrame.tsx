@@ -129,6 +129,21 @@ export function LandingPageFrame({
 }: LandingPageFrameProps) {
   const [ready, setReady] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const visibleRef = useRef(true);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => {
+      visibleRef.current = entry.isIntersecting;
+      frame.contentWindow?.postMessage(
+        { type: "threeui:visibility", visible: entry.isIntersecting },
+        window.location.origin,
+      );
+    });
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
 
   // Re-applied on every change; the load handler covers the first paint and
   // any navigation the page does inside its own frame.
@@ -152,6 +167,10 @@ export function LandingPageFrame({
         sandbox={srcDoc ? SRCDOC_FRAME_SANDBOX : URL_FRAME_SANDBOX}
         loading="eager"
         onLoad={(event) => {
+          event.currentTarget.contentWindow?.postMessage(
+            { type: "threeui:visibility", visible: visibleRef.current },
+            window.location.origin,
+          );
           applyPageCustomization(event.currentTarget, customization);
           postPageCustomization(event.currentTarget, customization);
           applyBackgroundPresentation(event.currentTarget, backgroundCanvasSelector, backgroundVisualSelector);

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { profile, projects, services, skills } from '../lib/content.ts';
+import { optimizeSylvaRuntime, splitSylvaAssets } from './sylva-performance-runtime.mjs';
 
 const root = new URL('../', import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('vendor/threeui/sylva-source.json', root), 'utf8'));
@@ -47,8 +48,8 @@ replace('<h2>After the Rain</h2>', '<h2>Fittra Training</h2>');
 replace('aria-label="Open field note: After the Rain"', 'aria-label="View the Fittra Training case study" data-business-route="/project/fittra-training/"');
 replace('href="#">Discover', 'href="#work" data-business-panel="work">Discover');
 
-// Keep the authored shaders, geometry, and interaction scripts unchanged.
-// The application adapter adds destinations and panels outside the hero layout.
+// Verify the unmodified authored blocks before deriving runtime scheduling and
+// cacheable assets. Shaders and geometry stay in the checked-in archive.
 const css = await readFile(new URL('scripts/sylva-business.css', root), 'utf8');
 const script = await readFile(new URL('scripts/sylva-business.js', root), 'utf8');
 const data = JSON.stringify({ profile, projects, services, skills }).replaceAll('<', '\\u003c');
@@ -63,5 +64,7 @@ replace('</body>', `<dialog id="business-dialog" aria-labelledby="business-title
 </body>`);
 await mkdir(new URL('public/landing-pages/', root), { recursive: true });
 for (const block of authoredBlocks) assert.ok(html.includes(block), 'An authored Sylva script or stylesheet changed');
+html = optimizeSylvaRuntime(html);
+html = await splitSylvaAssets(html, root);
 await writeFile(new URL('public/landing-pages/inner-green-3d.html', root), html);
 console.log('Generated Ahmed’s Sylva homepage from verified source and assets.');

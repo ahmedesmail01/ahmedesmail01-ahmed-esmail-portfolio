@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import Image from 'next/image';
+import { ResponsiveImage } from '@/components/responsive-image';
 import Link from 'next/link';
 import { ArrowUpRight, ArrowUp } from 'lucide-react';
 import { profile, type Project, posts } from '@/lib/content';
@@ -34,9 +34,10 @@ export function SectionHeading({ eyebrow, title, description, children }: { eyeb
 }
 
 export function ProjectCard({ project, index = 0 }: { project: Project; index?: number }) {
-  return <Link href={`/project/${project.slug}/`} className={styles.projectCard}>
+  // Detail routes preload their large cover; defer that request until navigation.
+  return <Link href={`/project/${project.slug}/`} prefetch={false} className={styles.projectCard}>
     <div className={styles.projectImage}>
-      <Image src={project.image} alt={`Illustrative cover for ${project.title}`} width={1000} height={750} sizes="(max-width: 760px) 100vw, 50vw" />
+      <ResponsiveImage src={project.image} alt={`Illustrative cover for ${project.title}`} sizes="(max-width: 400px) calc(100vw - 36px), (max-width: 760px) calc(100vw - 44px), (max-width: 1100px) calc((100vw - 92px) / 2), (max-width: 1416px) calc((100vw - 124px) / 2), (min-width: 1600px) 670px, 646px" />
       <span className={styles.imageBadge}>{project.sample ? 'Concept study' : 'Frontend contribution'}</span>
       <span className={styles.imageNumber}>{String(index + 1).padStart(2, '0')}</span>
       <span className={styles.roundArrow}><ArrowUpRight size={25} strokeWidth={1.3} aria-hidden="true" /></span>
@@ -49,8 +50,8 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
 }
 
 export function JournalCard({ post, index = 0 }: { post: typeof posts[number]; index?: number }) {
-  return <Link href={`/blogs/${post.slug}/`} className={styles.journalCard}>
-    <div className={styles.journalImage}><Image src={post.image} alt="" width={720} height={450} sizes="(max-width: 760px) 100vw, 33vw" /><span className={styles.imageBadge}>Note {String(index + 1).padStart(2, '0')}</span></div>
+  return <Link href={`/blogs/${post.slug}/`} prefetch={false} className={styles.journalCard}>
+    <div className={styles.journalImage}><ResponsiveImage src={post.image} alt="" sizes="(max-width: 400px) calc(100vw - 36px), (max-width: 760px) calc(100vw - 44px), (max-width: 1100px) calc((100vw - 100px) / 3), (max-width: 1416px) calc((100vw - 144px) / 3), (min-width: 1600px) 440px, 424px" /><span className={styles.imageBadge}>Note {String(index + 1).padStart(2, '0')}</span></div>
     <div className={styles.journalInfo}>
       <p className={styles.eyebrow}>{post.category} · {post.read}</p><h3>{post.title}</h3><p>{post.intro}</p>
       <span className={styles.readNote}>Read the note <ArrowUpRight size={19} strokeWidth={1.4} aria-hidden="true" /></span>

@@ -166,10 +166,10 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   const cssUrl = await asset('page', css, 'css');
   for (const style of styles) html = html.replace(style[0], '');
   html = html.replace('</head>', `<link rel="stylesheet" href="${cssUrl}">\n<link rel="preload" as="image" href="${poster}" fetchpriority="high">\n</head>`);
-  // Only this generated directory is owned by the packer. Remove old hashes so
-  // content updates do not accumulate unused copies in the static deployment.
+  // Sylva owns its prefixed files in this shared directory. Remove only old
+  // Sublevel hashes so rebuilding one scene preserves the other's assets.
   for (const file of await readdir(directory)) {
-    if (!published.has(file)) await rm(new URL(file, directory));
+    if (!file.startsWith('sylva-') && !published.has(file)) await rm(new URL(file, directory));
   }
   return html;
 }

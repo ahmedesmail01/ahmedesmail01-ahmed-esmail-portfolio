@@ -1,0 +1,8 @@
+/* Loaded with reusable UI or archived pages, rather than every portfolio route. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "tw-animate-css";
+@import "../../app/theme.css";
+@source "..";
+@source "../../hooks";

@@ -1,5 +1,6 @@
 "use client"
 
+import "./utilities.css"
 import {
   CircleCheckIcon,
   InfoIcon,
