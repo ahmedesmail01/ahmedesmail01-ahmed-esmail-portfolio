@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/landing-pages/sublevel-studio.html",
+      "destination": "/landing-pages/sublevel-studio/",
+      "permanent": true
+    }
+  ]
+}

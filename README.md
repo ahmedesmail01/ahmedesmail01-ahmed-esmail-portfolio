@@ -14,6 +14,8 @@ pnpm dev
 
 Open http://localhost:5173. Use `pnpm build` to generate the deployable `out` directory. Scripts use Node.js and work in Windows PowerShell without Bash, Unix environment assignments or shell utilities. Any unused inherited infrastructure helpers are not required for the Next.js workflow.
 
+On Vercel, `vercel.json` redirects the iframe's `/landing-pages/sublevel-studio.html` URL to `/landing-pages/sublevel-studio/`. The deployed static export serves the document at that clean URL; requesting the `.html` URL otherwise displays the application's 404 inside the iframe. Keep this rule when deploying to Vercel. Local development and other static hosts continue using the original HTML path. Push configuration changes and redeploy for the rule to take effect.
+
 ## Edit content
 
 - `app/page.tsx` uses the exact-source ThreeUI `SublevelStudioLandingPage`, customized for Ahmed. The previous homepage is preserved as `LegacyHomePage` in `components/home/legacy-home-page.tsx`.
