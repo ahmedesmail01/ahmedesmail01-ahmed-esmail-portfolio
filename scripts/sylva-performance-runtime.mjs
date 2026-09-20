@@ -190,8 +190,8 @@ export async function splitSylvaAssets(html, root) {
     assert.ok(image, `Missing responsive Sylva image: ${name}`);
     const srcset = image.variants.map(({ src, width }) => `${src} ${width}w`).join(', ');
     const sizes = name === 'card-ethos'
-      ? '(max-width: 900px) 30vw, (min-width: 1900px) 235px, 13vw'
-      : '(max-width: 900px) 40vw, (min-width: 1900px) 310px, 17vw';
+      ? '(max-width: 600px) 104px, (max-width: 900px) 30vw, (min-width: 1900px) 235px, 13vw'
+      : '(max-width: 600px) 104px, (max-width: 900px) 40vw, (min-width: 1900px) 310px, 17vw';
     html = html.replace(`src="inner-green-assets/${name}.jpg"`, `src="${image.src}" srcset="${srcset}" sizes="${sizes}" width="${image.width}" height="${image.height}"`);
   }
   // Only prune this generator's own assets; Sublevel shares the directory.

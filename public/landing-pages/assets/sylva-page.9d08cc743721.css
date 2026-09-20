@@ -702,6 +702,24 @@
   }
 
 
+/* Shared by the parent frame and generated hero so their heights stay in sync. */
+@media (max-width: 600px) {
+  .sylva-mobile-hero {
+    --mobile-unit: calc(100vw / 760);
+    --mobile-title-size: clamp(36px, 9vw, 54px);
+    --mobile-copy-top: 110px;
+    --mobile-lede-top: calc(var(--mobile-copy-top) + var(--mobile-title-size) * 2.28 + 20px);
+    --mobile-action-top: calc(var(--mobile-lede-top) + 90px);
+    --mobile-stats-top: calc(var(--mobile-action-top) + 82px);
+    --mobile-scene-top: calc(var(--mobile-stats-top) + 70px);
+    --mobile-scene-shift: max(0px, calc(var(--mobile-scene-top) - 555 * var(--mobile-unit)));
+    --mobile-card-top: calc(1135 * var(--mobile-unit));
+    --mobile-card-height: 148px;
+    --mobile-stage-height: calc(var(--mobile-card-top) + var(--mobile-card-height) * 2 + 56px);
+    --mobile-hero-height: calc(var(--mobile-scene-shift) + var(--mobile-stage-height));
+  }
+}
+
 #business-dialog {
   position: fixed;
   inset: 0;
@@ -735,4 +753,100 @@
 #business-dialog .business-links { display: flex; flex-wrap: wrap; gap: 12px 24px; }
 #business-dialog .business-services { padding-left: 20px; margin: 0 0 22px; }
 #business-dialog .business-services li { margin-bottom: 6px; }
+
+/* Phone layout uses readable CSS-pixel sizes while the scene keeps its authored
+   design unit. Moving the stage also moves the renderer's measured origin. */
+@media (max-width: 600px) {
+  #hero .stage {
+    height: var(--mobile-stage-height);
+    margin-top: var(--mobile-scene-shift);
+  }
+
+  #hero .dock-wrap { top: 20px; }
+  #hero .guides { top: calc(-1 * var(--mobile-scene-shift)); }
+  #hero .ghost, #hero .scroll { display: none; }
+
+  #hero .headline {
+    left: 20px;
+    top: calc(var(--mobile-copy-top) - var(--mobile-scene-shift));
+    font-size: var(--mobile-title-size);
+    line-height: 1.1;
+    letter-spacing: -.035em;
+  }
+
+  #hero .lede {
+    left: 20px;
+    top: calc(var(--mobile-lede-top) - var(--mobile-scene-shift));
+    width: calc(100% - 40px);
+    max-width: 440px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  #hero .pill-clip {
+    left: 0;
+    top: calc(var(--mobile-action-top) - var(--mobile-scene-shift));
+    width: 100%;
+    height: 82px;
+    margin: 0;
+    clip-path: none;
+    overflow: hidden;
+  }
+  #hero .pill { display: flex; align-items: center; justify-content: center; }
+  #hero .liquid-stage--explore { --h: 52px; flex: none; }
+
+  #hero .stat {
+    top: calc(var(--mobile-stats-top) - var(--mobile-scene-shift));
+    gap: 9px;
+  }
+  #hero .stat--a { left: 20px; }
+  #hero .stat--b { left: calc(50% + 4px); }
+  #hero .stat .mark { width: 22px; height: 22px; margin-top: 2px; }
+  #hero .stat dt { font-size: 11px; line-height: 18px; }
+  #hero .stat dd { font-size: 13px; line-height: 20px; }
+
+  #hero .card {
+    z-index: 4;
+    left: 20px;
+    width: calc(100% - 40px);
+    height: var(--mobile-card-height);
+    border-radius: 24px;
+  }
+  #hero .card--about { top: var(--mobile-card-top); }
+  #hero .card--stove { top: calc(var(--mobile-card-top) + var(--mobile-card-height) + 16px); }
+  #hero .card .label { left: 20px; top: 28px; font-size: 11px; }
+  #hero .card h2 {
+    left: 20px;
+    top: 52px;
+    width: calc(100% - 148px);
+    font-size: 21px;
+    line-height: 1.2;
+    letter-spacing: -.035em;
+  }
+  #hero .card figure {
+    left: auto;
+    right: 12px;
+    top: 12px;
+    bottom: auto;
+    width: 104px;
+    height: 124px;
+    border-radius: 18px;
+  }
+  #hero .card .knob, #hero .knob--about {
+    width: 44px;
+    height: 44px;
+    right: 20px;
+    bottom: 20px;
+  }
+  #hero .knob-float {
+    left: auto;
+    right: 40px;
+    top: calc(var(--mobile-card-top) + var(--mobile-card-height) - 64px);
+    width: 44px;
+    height: 44px;
+    transform-origin: center;
+  }
+  #hero .knob--about { left: 0; top: 0; right: auto; bottom: auto; }
+  #hero .card .knob svg, #hero .knob--about svg { width: 18px; height: 18px; }
+}
 

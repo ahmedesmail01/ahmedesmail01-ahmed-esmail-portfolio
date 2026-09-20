@@ -12,3 +12,9 @@
     height: max(100svh, calc(100vw * 1625 / 760));
   }
 }
+
+@media (max-width: 600px) {
+  .frame {
+    height: max(100svh, var(--mobile-hero-height));
+  }
+}

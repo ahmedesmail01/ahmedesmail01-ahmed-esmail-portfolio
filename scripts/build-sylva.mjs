@@ -22,6 +22,7 @@ function replace(before, after) {
 }
 
 replace('<head>', '<head>\n<base href="/landing-pages/">');
+replace('<main class="hero" id="hero">', '<main class="hero sylva-mobile-hero" id="hero">');
 replace('<title>Sylva — Into the living world</title>', '<title>Ahmed Esmail — Full-Stack &amp; Frontend Engineer</title>');
 replace('Restoring wild places through patient design, native planting, and a deeper kind of stewardship.', 'Ahmed Esmail builds thoughtful websites, learning platforms, commerce experiences and custom web applications. Based in Cairo, working worldwide.');
 replace('aria-label="Sylva — home"', 'aria-label="Ahmed Esmail — home" data-business-home');
@@ -50,7 +51,8 @@ replace('href="#">Discover', 'href="#work" data-business-panel="work">Discover')
 
 // Verify the unmodified authored blocks before deriving runtime scheduling and
 // cacheable assets. Shaders and geometry stay in the checked-in archive.
-const css = await readFile(new URL('scripts/sylva-business.css', root), 'utf8');
+const mobileDimensions = await readFile(new URL('components/sylva/mobile-hero.css', root), 'utf8');
+const css = `${mobileDimensions}\n${await readFile(new URL('scripts/sylva-business.css', root), 'utf8')}`;
 const script = await readFile(new URL('scripts/sylva-business.js', root), 'utf8');
 const data = JSON.stringify({ profile, projects, services, skills }).replaceAll('<', '\\u003c');
 replace('</head>', `<style id="ahmed-business-styles">\n${css}\n</style>\n</head>`);

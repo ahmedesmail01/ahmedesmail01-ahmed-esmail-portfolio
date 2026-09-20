@@ -1,12 +1,13 @@
 import { SylvaHero } from "@designcodeio/threeui";
 import "@designcodeio/threeui/style.css";
+import "./mobile-hero.css";
 import styles from "./hero.module.css";
 
 export function SylvaHomeHero() {
   return (
     <section
       id="home"
-      className={`shader-frame ${styles.frame}`}
+      className={`shader-frame sylva-mobile-hero ${styles.frame}`}
       aria-label="Ahmed Esmail — full-stack and frontend engineer"
       tabIndex={-1}
     >
