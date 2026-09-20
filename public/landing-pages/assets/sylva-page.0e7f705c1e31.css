@@ -707,7 +707,9 @@
   .sylva-mobile-hero {
     --mobile-unit: calc(100vw / 760);
     --mobile-title-size: clamp(36px, 9vw, 54px);
-    --mobile-copy-top: 110px;
+    --mobile-portrait-top: 110px;
+    --mobile-portrait-size: clamp(160px, 42vw, 192px);
+    --mobile-copy-top: calc(var(--mobile-portrait-top) + var(--mobile-portrait-size) + 104px);
     --mobile-lede-top: calc(var(--mobile-copy-top) + var(--mobile-title-size) * 2.28 + 20px);
     --mobile-action-top: calc(var(--mobile-lede-top) + 90px);
     --mobile-stats-top: calc(var(--mobile-action-top) + 82px);
@@ -754,6 +756,61 @@
 #business-dialog .business-services { padding-left: 20px; margin: 0 0 22px; }
 #business-dialog .business-services li { margin-bottom: 6px; }
 
+/* The portrait and caption form one centered introduction beside the copy. */
+#hero .hero-portrait {
+  position: absolute;
+  z-index: 4;
+  left: calc(46 * var(--u));
+  top: calc(100 * var(--u));
+  width: calc(200 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(18 * var(--u));
+  margin: 0;
+  text-align: center;
+}
+#hero .hero-portrait img {
+  display: block;
+  flex: none;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: center 20%;
+  border: 2px solid rgba(242, 243, 239, .65);
+  border-radius: 50%;
+  background: #858585;
+  box-shadow: 0 8px 24px rgba(16, 21, 13, .16);
+}
+#hero .hero-portrait figcaption { display: grid; gap: 6px; }
+#hero .hero-portrait strong {
+  font-size: clamp(14px, calc(24 * var(--u)), 28px);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1.3;
+}
+#hero .hero-portrait figcaption span {
+  color: var(--ink-soft);
+  font-size: clamp(11px, calc(14 * var(--u)), 16px);
+  line-height: 1.5;
+}
+
+@media (min-width: 901px) {
+  #hero .headline { left: calc(290 * var(--u)); top: calc(140 * var(--u)); }
+  #hero .lede { left: calc(290 * var(--u)); top: calc(300 * var(--u)); width: calc(440 * var(--u)); }
+  #hero .pill-clip { left: calc(510 * var(--u)); top: calc(420 * var(--u)); }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  #hero .hero-portrait {
+    left: auto;
+    right: calc(34 * var(--u));
+    top: calc(150 * var(--u));
+    width: calc(220 * var(--u));
+  }
+}
+
 /* Phone layout uses readable CSS-pixel sizes while the scene keeps its authored
    design unit. Moving the stage also moves the renderer's measured origin. */
 @media (max-width: 600px) {
@@ -765,6 +822,16 @@
   #hero .dock-wrap { top: 20px; }
   #hero .guides { top: calc(-1 * var(--mobile-scene-shift)); }
   #hero .ghost, #hero .scroll { display: none; }
+
+  #hero .hero-portrait {
+    left: 20px;
+    width: calc(100% - 40px);
+    top: calc(var(--mobile-portrait-top) - var(--mobile-scene-shift));
+    gap: 16px;
+  }
+  #hero .hero-portrait img { width: var(--mobile-portrait-size); }
+  #hero .hero-portrait strong { font-size: 24px; }
+  #hero .hero-portrait figcaption span { font-size: 13px; }
 
   #hero .headline {
     left: 20px;

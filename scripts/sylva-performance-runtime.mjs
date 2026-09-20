@@ -185,14 +185,16 @@ export async function splitSylvaAssets(html, root) {
   html = html.replace('</head>', '<link rel="preload" href="/landing-pages/inner-green-assets/lexend-latin.woff2" as="font" type="font/woff2" crossorigin>\n</head>');
 
   const images = JSON.parse(await readFile(new URL('lib/generated/responsive-images.json', root), 'utf8'));
-  for (const name of ['card-ethos', 'card-ecostove']) {
-    const image = images[`/landing-pages/inner-green-assets/${name}.jpg`];
-    assert.ok(image, `Missing responsive Sylva image: ${name}`);
+  const heroImages = [
+    { source: '/landing-pages/inner-green-assets/card-ethos.jpg', original: 'inner-green-assets/card-ethos.jpg', sizes: '(max-width: 600px) 104px, (max-width: 900px) 30vw, (min-width: 1900px) 235px, 13vw' },
+    { source: '/landing-pages/inner-green-assets/card-ecostove.jpg', original: 'inner-green-assets/card-ecostove.jpg', sizes: '(max-width: 600px) 104px, (max-width: 900px) 40vw, (min-width: 1900px) 310px, 17vw' },
+    { source: '/images/ahmed-esmail-portrait.jpg', original: '/images/ahmed-esmail-portrait.jpg', sizes: '(max-width: 600px) clamp(160px, 42vw, 192px), (max-width: 900px) 28.95vw, (min-width: 1900px) 237.5px, 12.5vw' },
+  ];
+  for (const { source, original, sizes } of heroImages) {
+    const image = images[source];
+    assert.ok(image, `Missing responsive Sylva image: ${source}`);
     const srcset = image.variants.map(({ src, width }) => `${src} ${width}w`).join(', ');
-    const sizes = name === 'card-ethos'
-      ? '(max-width: 600px) 104px, (max-width: 900px) 30vw, (min-width: 1900px) 235px, 13vw'
-      : '(max-width: 600px) 104px, (max-width: 900px) 40vw, (min-width: 1900px) 310px, 17vw';
-    html = html.replace(`src="inner-green-assets/${name}.jpg"`, `src="${image.src}" srcset="${srcset}" sizes="${sizes}" width="${image.width}" height="${image.height}"`);
+    html = html.replace(`src="${original}"`, `src="${image.src}" srcset="${srcset}" sizes="${sizes}" width="${image.width}" height="${image.height}"`);
   }
   // Only prune this generator's own assets; Sublevel shares the directory.
   for (const filename of await readdir(directory)) {

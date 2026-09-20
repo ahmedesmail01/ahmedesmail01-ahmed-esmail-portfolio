@@ -13,6 +13,7 @@ const options = { quality: 82, effort: 5 };
 const sources = [...new Set([
   ...projects.map(({ image }) => image),
   ...posts.map(({ image }) => image),
+  '/images/ahmed-esmail-portrait.jpg',
   '/landing-pages/inner-green-assets/card-ethos.jpg',
   '/landing-pages/inner-green-assets/card-ecostove.jpg',
 ])].sort();
@@ -36,7 +37,8 @@ for (const src of sources) {
   // autoOrient also normalizes any camera orientation before deriving dimensions.
   const { width, height } = metadata.autoOrient ?? metadata;
   const maximumWidth = Math.min(width, 1600);
-  const outputWidths = [...new Set([...widths.filter((size) => size < maximumWidth), maximumWidth])];
+  const sourceWidths = src === '/images/ahmed-esmail-portrait.jpg' ? [192, 384, 640] : widths;
+  const outputWidths = [...new Set([...sourceWidths.filter((size) => size < maximumWidth), maximumWidth])];
   const hash = createHash('sha256')
     .update(src)
     .update(input)

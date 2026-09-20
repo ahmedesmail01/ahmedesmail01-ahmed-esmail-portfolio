@@ -3,7 +3,9 @@
   .sylva-mobile-hero {
     --mobile-unit: calc(100vw / 760);
     --mobile-title-size: clamp(36px, 9vw, 54px);
-    --mobile-copy-top: 110px;
+    --mobile-portrait-top: 110px;
+    --mobile-portrait-size: clamp(160px, 42vw, 192px);
+    --mobile-copy-top: calc(var(--mobile-portrait-top) + var(--mobile-portrait-size) + 104px);
     --mobile-lede-top: calc(var(--mobile-copy-top) + var(--mobile-title-size) * 2.28 + 20px);
     --mobile-action-top: calc(var(--mobile-lede-top) + 90px);
     --mobile-stats-top: calc(var(--mobile-action-top) + 82px);

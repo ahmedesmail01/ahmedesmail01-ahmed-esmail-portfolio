@@ -48,6 +48,11 @@ replace('<p class="label">Field Note 07</p>', '<p class="label">Selected work</p
 replace('<h2>After the Rain</h2>', '<h2>Fittra Training</h2>');
 replace('aria-label="Open field note: After the Rain"', 'aria-label="View the Fittra Training case study" data-business-route="/project/fittra-training/"');
 replace('href="#">Discover', 'href="#work" data-business-panel="work">Discover');
+replace('<div class="stage" id="stage">', `<div class="stage" id="stage">
+    <figure class="hero-portrait">
+      <img src="/images/ahmed-esmail-portrait.jpg" alt="Portrait of Ahmed Esmail" loading="eager" decoding="async" fetchpriority="high">
+      <figcaption><strong>Ahmed Esmail</strong><span>Full-stack engineer</span></figcaption>
+    </figure>`);
 
 // Verify the unmodified authored blocks before deriving runtime scheduling and
 // cacheable assets. Shaders and geometry stay in the checked-in archive.

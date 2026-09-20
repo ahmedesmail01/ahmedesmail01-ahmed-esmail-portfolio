@@ -1,4 +1,27 @@
 {
+  "/images/ahmed-esmail-portrait.jpg": {
+    "width": 894,
+    "height": 960,
+    "src": "/images/responsive/ahmed-esmail-portrait-4a67c2ca6d19-894.webp",
+    "variants": [
+      {
+        "width": 192,
+        "src": "/images/responsive/ahmed-esmail-portrait-4a67c2ca6d19-192.webp"
+      },
+      {
+        "width": 384,
+        "src": "/images/responsive/ahmed-esmail-portrait-4a67c2ca6d19-384.webp"
+      },
+      {
+        "width": 640,
+        "src": "/images/responsive/ahmed-esmail-portrait-4a67c2ca6d19-640.webp"
+      },
+      {
+        "width": 894,
+        "src": "/images/responsive/ahmed-esmail-portrait-4a67c2ca6d19-894.webp"
+      }
+    ]
+  },
   "/images/events.webp": {
     "width": 1400,
     "height": 934,
