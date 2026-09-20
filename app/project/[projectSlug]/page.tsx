@@ -10,6 +10,9 @@ import {
 } from '@/components/sylva/site';
 import styles from '@/components/sylva/sylva.module.css';
 
+// Only publish project URLs generated from the content during the build.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return projects.map((project) => ({ projectSlug: project.slug }));
 }

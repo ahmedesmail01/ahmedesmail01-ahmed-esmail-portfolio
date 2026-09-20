@@ -14,6 +14,10 @@ pnpm dev
 
 Open http://localhost:5173. Use `pnpm build` to generate the deployable `out` directory. Scripts use Node.js and work in Windows PowerShell without Bash, Unix environment assignments or shell utilities. Any unused inherited infrastructure helpers are not required for the Next.js workflow.
 
+Production uses Static Site Generation (SSG). `next.config.ts` exports the complete site, and the root layout explicitly rejects request-time server rendering. Project and journal slugs are enumerated by `generateStaticParams()` with `dynamicParams = false`, so only published content has a generated page. Rebuild and redeploy after changing content. Navigation, forms, and the 3D hero remain interactive in the browser.
+
+Both `pnpm dev` and the workspace's `pnpm start` alias run the development server. For production, deploy the generated `out/` directory to your static host; there is no Next.js server process to run.
+
 On Vercel, `vercel.json` redirects the Sylva and preserved Sublevel iframe HTML URLs to their clean, trailing-slash URLs. Keep these rules when deploying to Vercel to avoid a 404 inside the iframe. Sylva's generated document includes a `/landing-pages/` base URL so its original relative asset paths work after the redirect. Local development and other static hosts continue using the original HTML paths. Push configuration changes and redeploy for the rules to take effect.
 
 ## Edit content

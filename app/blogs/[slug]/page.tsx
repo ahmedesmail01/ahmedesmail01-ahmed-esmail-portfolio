@@ -11,6 +11,9 @@ import {
 } from '@/components/sylva/site';
 import styles from '@/components/sylva/sylva.module.css';
 
+// Only publish article URLs generated from the content during the build.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
