@@ -32,6 +32,13 @@ Integration changes:
   excluded.
 - `scripts/build-sublevel.mjs` generates the public document from the archived
   HTML with Ahmed's business content and links. The archive remains unchanged.
+- `scripts/sublevel-performance-runtime.mjs` derives visibility-aware playback,
+  lower touch-device pixel ratios, and cached particle calculations from that
+  source. `scripts/sublevel-assets.mjs` separates styles, scripts, images, and
+  binary models into cacheable files, loads optional effects on demand, and
+  shows a scene capture while the interactive lobby initializes. The local
+  dependencies and their provenance are in `runtime/`. The menu retains its
+  authored r149 engine; the lobby retains Three.js 0.160.0.
 
 The MIT license is copied from the published `@designcodeio/threeui@1.2.0`
 package. The registered source hashes above identify the actual implementation

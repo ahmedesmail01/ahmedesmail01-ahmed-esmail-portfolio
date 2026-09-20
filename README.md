@@ -31,7 +31,28 @@ The supplied profile is the source for experience and contact information. KeyBu
 
 The new homepage enquiry form validates an email address and opens a populated email draft, with an accessible validation message and fallback email link. The preserved legacy form uses React Hook Form and Zod. Visitors must send the draft in their email client; neither form claims server delivery or stores inquiries. Static export currently has no server runtime.
 
-The ThreeUI homepage preserves its authored animation and reduced-motion behavior. Its fonts load from Google Fonts; the lobby uses Three.js 0.160 and GLTFLoader from the original CDN paths, alongside the authored inlined media and runtimes. The older pages retain their self-hosted fonts and existing motion settings.
+The ThreeUI homepage retains its authored scene and interactions, with local fonts and pinned Three.js 0.160 dependencies. The older pages retain their self-hosted fonts and existing motion settings.
+
+## Homepage performance
+
+The generator splits the former 2.46 MB inline document into approximately 30 KB of HTML and separate cacheable assets. A small preview captured from the actual scene appears while the interactive lobby initializes. Models load as binary GLB files; below-the-fold images load lazily with their dimensions reserved.
+
+`scripts/sublevel-assets.mjs` handles asset extraction and loading. The paper menu and its original engine load on first open, the terminal loads on demand, and particles and footer effects load near their sections. No third-party font or engine requests are needed. `vendor/threeui/runtime/` holds the pinned dependencies and licenses; builds work without fetching them again.
+
+`scripts/sublevel-performance-runtime.mjs` pauses render loops when hidden, offscreen, or covered by the menu, caches particle row lookups, and lets settled particles stop rendering. Touch devices use lower canvas pixel ratios. Reduced-motion visitors skip the particle and VHS overlays. The verified upstream archive remains untouched; source replacements assert their anchors when generating the optimized runtime.
+
+`public/_headers` enables long-lived caching for content-hashed assets on hosts that support that file, including Cloudflare Pages and Netlify. Other hosts need equivalent cache rules and gzip/Brotli configured in their hosting settings. Deploy the complete `out` directory after `pnpm build`.
+
+Local production spot checks used cold Chrome contexts, an uncompressed localhost server, desktop 1440×900/DPR 1 and mobile emulation 390×844/DPR 2. These are individual measurements, not a Lighthouse score or a prediction for every device:
+
+| Metric | Desktop before → after | Mobile before → after |
+| --- | --- | --- |
+| Landing document first contentful paint | 1,840 → 388 ms | 2,940 → 248 ms |
+| Total transfer including a footer visit | 3.74 → 3.32 MB | 3.74 → 3.06 MB |
+| Third-party requests | 8 → 0 | 8 → 0 |
+| Main-thread work over 2.5 seconds after leaving the lobby | 816 → 292 ms | 1,258 → 455 ms |
+
+The HTML reduction comes from extracting assets; it does not mean the entire application is 99% smaller. Full 3D startup remained variable in headless Chrome: desktop 12.3 → 14.0 seconds, mobile 19.1 → 3.2 seconds. The preview and DOM controls are available before the scene finishes initializing.
 
 ## Service research and scope
 

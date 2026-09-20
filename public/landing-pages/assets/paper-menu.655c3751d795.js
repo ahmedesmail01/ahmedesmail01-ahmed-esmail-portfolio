@@ -1,0 +1,485 @@
+(function(){
+"use strict";
+const T = THREE;
+const TW = 1400, TH = 1932;               // 0.7246, same proportion as before
+const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+const rng = (s)=>()=>{ s=(s*1103515245+12345)&0x7fffffff; return (s>>>8)/8388608; };
+const REDUCED = window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ======================================================================
+   1. THE CERTIFICATE — printed on glass
+   ====================================================================== */
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);     ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function wrapL(ctx,text,x,y,maxW,lh){
+  const words=text.split(' '); let line='', yy=y;
+  for(const w of words){ const t=line?line+' '+w:w;
+    if(ctx.measureText(t).width>maxW && line){ ctx.fillText(line,x,yy); line=w; yy+=lh; }
+    else line=t; }
+  if(line) ctx.fillText(line,x,yy);
+  return yy+lh;
+}
+
+function signature(ctx,x,y,s,seed,color){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
+  const rnd = rng(seed*7919+13);
+  ctx.beginPath(); ctx.moveTo(0,15);
+  ctx.bezierCurveTo(-3+rnd()*4,-7, 9,-20-rnd()*6, 15,-5);
+  ctx.bezierCurveTo(18,7, 7,15, 9,4);
+  let px=9, py=4;
+  const n=4+Math.floor(rnd()*3);
+  for(let i=0;i<n;i++){
+    const step=9+rnd()*11, nx=px+step, ny=4-(i%2?-1:1)*(4+rnd()*13);
+    ctx.bezierCurveTo(px+step*0.35, py-9-rnd()*10, nx-step*0.35, ny+7+rnd()*8, nx, ny);
+    px=nx; py=ny;
+  }
+  ctx.bezierCurveTo(px+9, py-13, px+21, py+11, px+29, py-3);
+  ctx.stroke();
+  ctx.beginPath(); ctx.lineWidth=1.4;
+  ctx.moveTo(-5,19); ctx.quadraticCurveTo(px*0.55, 24+rnd()*5, px+25, 12+rnd()*4);
+  ctx.stroke(); ctx.restore();
+}
+
+function drawGlass(ctx){
+  // authored on the old 1200x1656 grid, scaled up for a crisper hero
+  ctx.scale(TW/1200, TH/1656);
+
+  ctx.fillStyle='rgba(255,255,255,.030)'; ctx.fillRect(0,0,1200,1656);
+  // a whisper of frost behind the headline so it holds over the type below
+  const fr=ctx.createLinearGradient(0,240,0,880);
+  fr.addColorStop(0,'rgba(255,255,255,0)');   fr.addColorStop(.26,'rgba(255,255,255,.060)');
+  fr.addColorStop(.74,'rgba(255,255,255,.060)'); fr.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=fr; ctx.fillRect(40,240,1120,640);
+
+  ctx.strokeStyle='rgba(255,255,255,.34)'; ctx.lineWidth=2;
+  rr(ctx,20,20,1160,1616,14); ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+  rr(ctx,36,36,1128,1584,10); ctx.stroke();
+
+  // the face is left blank: the menu is laid over it in the DOM
+}
+
+function makeCertTexture(){
+  const c = document.createElement('canvas'); c.width=TW; c.height=TH;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,TW,TH);
+  ctx.save(); rr(ctx,0,0,TW,TH,30); ctx.clip(); drawGlass(ctx);
+  // retro pass: a warm paper cast, a fine halftone screen and soft scan bands,
+  // drawn from a 4px tile rather than a per-dot loop over the whole plate
+  ctx.globalCompositeOperation='overlay';
+  ctx.fillStyle='rgba(216,178,122,0.17)'; ctx.fillRect(0,0,TW,TH);
+  ctx.globalCompositeOperation='source-over';
+  const dot=document.createElement('canvas'); dot.width=dot.height=4;
+  const dctx=dot.getContext('2d'); dctx.fillStyle='#000'; dctx.fillRect(0,0,1.5,1.5);
+  ctx.globalAlpha=0.11; ctx.fillStyle=ctx.createPattern(dot,'repeat'); ctx.fillRect(0,0,TW,TH);
+  const band=document.createElement('canvas'); band.width=1; band.height=3;
+  const bctx=band.getContext('2d'); bctx.fillStyle='#000'; bctx.fillRect(0,0,1,1);
+  ctx.globalAlpha=0.06; ctx.fillStyle=ctx.createPattern(band,'repeat'); ctx.fillRect(0,0,TW,TH);
+  ctx.globalAlpha=1;
+  ctx.restore();
+  const t = new T.CanvasTexture(c);
+  t.encoding = T.sRGBEncoding; t.anisotropy = 8; t.needsUpdate = true;
+  return t;
+}
+
+/* ======================================================================
+   2. GRAIN
+   ====================================================================== */
+(function grain(){
+  const n=160, c=document.createElement('canvas'); c.width=c.height=n;
+  const x=c.getContext('2d'), d=x.createImageData(n,n);
+  for(let i=0;i<n*n;i++){
+    const v = 128 + (Math.random()-0.5)*168;
+    d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=v; d.data[i*4+3]=255;
+  }
+  x.putImageData(d,0,0);
+  const url='url('+c.toDataURL()+')';
+  document.getElementById('pp-grain').style.backgroundImage=url;
+  document.getElementById('pp-grain2').style.backgroundImage=url;
+})();
+
+/* ======================================================================
+   3. SCENE
+   ====================================================================== */
+const HOST = document.getElementById('paper-stage');
+const hostRect = () => HOST.getBoundingClientRect();
+const canvas = document.getElementById('pp-gl');
+const renderer = new T.WebGLRenderer({canvas, antialias:true, alpha:true,
+                                      powerPreference:'high-performance'});
+renderer.outputEncoding = T.sRGBEncoding;
+renderer.toneMapping = T.NoToneMapping;
+
+const scene  = new T.Scene();
+const camera = new T.PerspectiveCamera(24, 1, 0.1, 100);
+camera.position.set(0,0,8.2);
+
+function envTexture(){
+  const w=1024,h=512,c=document.createElement('canvas');
+  c.width=w;c.height=h; const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,'#3a3d47'); g.addColorStop(.46,'#171820'); g.addColorStop(1,'#08080a');
+  x.fillStyle=g; x.fillRect(0,0,w,h);
+  const blob=(cx,cy,rx,ry,col,a)=>{
+    const rg=x.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));
+    rg.addColorStop(0,col.replace('A',a)); rg.addColorStop(1,col.replace('A','0'));
+    x.save(); x.translate(cx,cy); x.scale(1,ry/rx); x.translate(-cx,-cy);
+    x.fillStyle=rg; x.beginPath(); x.arc(cx,cy,rx,0,7); x.fill(); x.restore();
+  };
+  blob(w*0.30,h*0.24,330,240,'rgba(255,252,246,A)','1');
+  blob(w*0.74,h*0.34,240,200,'rgba(150,175,235,A)','.42');
+  blob(w*0.52,h*0.86,420,190,'rgba(255,170,120,A)','.10');
+  const t=new T.CanvasTexture(c);
+  t.mapping=T.EquirectangularReflectionMapping; t.encoding=T.sRGBEncoding;
+  return t;
+}
+const pmrem = new T.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+scene.environment = pmrem.fromEquirectangular(envTexture()).texture;
+
+const key  = new T.DirectionalLight(0xfff6ec, 1.42); key.position.set(-3.3,2.1,2.0);
+const fill = new T.DirectionalLight(0x9fb6ff, 0.13); fill.position.set(3.6,-1.8,1.6);
+const rim  = new T.DirectionalLight(0xffffff, 0.10); rim.position.set(1.6,1.2,-2.6);
+scene.add(key,fill,rim,new T.AmbientLight(0xffffff,0.16));
+
+const touchLight = new T.PointLight(0xdfe8ff, 0, 7.5, 1.35);
+touchLight.position.set(0,0,1.7); scene.add(touchLight);
+
+/* ---- geometry + the bend ------------------------------------------- */
+const SW = 2.30, SH = 2.72;
+const geo = new T.PlaneGeometry(SW,SH,72,96);
+
+const uni = {
+  uTime:{value:0}, uAmp:{value:1.18}, uFreq:{value:4.70}, uTwist:{value:1.30},
+  uSize:{value:new T.Vector2(SW,SH)}, uFlutter:{value:0}, uPhase:{value:0},
+  uRim:{value:0.62}, uRimA:{value:0.88}, uSpecA:{value:0.14},
+  uRimCol:{value:new T.Color(0xeaf2ff)}
+};
+
+const WAVE = `
+uniform float uTime, uAmp, uFlutter, uPhase, uFreq, uTwist;
+uniform vec2  uSize;
+
+// the sheet hangs: it curls harder at the top than along the bottom edge
+float sAmp(float u, float v){ return uAmp*(0.10 + pow(u,1.35))*(0.50 + 0.64*v); }
+float sAmpV(float u){        return uAmp*(0.10 + pow(u,1.35))*0.64; }
+
+float sTheta(float u, float v){
+  float a  = sAmp(u,v);
+  float ph = uFreq*u + uTwist*v + uTime*0.40 + uPhase;
+  return a*sin(ph) + uFlutter*a*0.60*sin(ph*2.35 + uTime*2.0);
+}
+float sThetaV(float u, float v){
+  float a  = sAmp(u,v), da = sAmpV(u);
+  float ph = uFreq*u + uTwist*v + uTime*0.40 + uPhase;
+  float f  = ph*2.35 + uTime*2.0;
+  return da*sin(ph) + a*cos(ph)*uTwist
+       + uFlutter*0.60*(da*sin(f) + a*cos(f)*uTwist*2.35);
+}
+float sYoff(float u, float v){
+  float w = 1.0 - 0.55*v;
+  return 0.021*uSize.y*sin(2.05*u + uTime*0.47 + uPhase)
+       + 0.013*uSize.y*sin(3.35*u - 1.55*v + uTime*0.63 + uPhase)*w;
+}
+float sYdU(float u, float v){
+  float w = 1.0 - 0.55*v;
+  return 0.0431*uSize.y*cos(2.05*u + uTime*0.47 + uPhase)
+       + 0.0436*uSize.y*cos(3.35*u - 1.55*v + uTime*0.63 + uPhase)*w;
+}
+float sYdV(float u, float v){
+  float ph = 3.35*u - 1.55*v + uTime*0.63 + uPhase;
+  return 0.013*uSize.y*(-1.55*cos(ph)*(1.0-0.55*v) - 0.55*sin(ph));
+}
+
+// paper conserves arc length: integrate the bend instead of pushing Z,
+// so the silhouette really pulls in where the sheet turns away
+void sheetPoint(vec2 q, out vec3 P, out vec3 NN){
+  float u = q.x, v = q.y;
+  float x=0.0, z=0.0, xe=0.0, ze=0.0, dxv=0.0, dzv=0.0, dxe=0.0, dze=0.0;
+  const int NS = 20;
+  float h = 1.0/float(NS);
+  for(int i=0;i<NS;i++){
+    float uu = (float(i)+0.5)*h;
+    float w  = clamp((u-(uu-0.5*h))/h, 0.0, 1.0);
+    float th = sTheta(uu,v);
+    float dt = sThetaV(uu,v);
+    float c = cos(th), sn = sin(th);
+    xe += c*h;          ze += sn*h;
+    dxe += -sn*dt*h;    dze +=  c*dt*h;
+    x   += c*h*w;       z   += sn*h*w;
+    dxv += -sn*dt*h*w;  dzv +=  c*dt*h*w;
+  }
+  float W = uSize.x, H = uSize.y;
+  float th0 = sTheta(u,v);
+  P = vec3((x - xe*0.5)*W, (v-0.5)*H + sYoff(u,v), (z - ze*0.5)*W);
+  vec3 Tu = vec3(W*cos(th0), sYdU(u,v), W*sin(th0));
+  vec3 Tv = vec3((dxv - dxe*0.5)*W, H + sYdV(u,v), (dzv - dze*0.5)*W);
+  NN = normalize(cross(Tu, Tv));
+}`;
+
+const tex = makeCertTexture();
+const mat = new T.MeshPhysicalMaterial({
+  map: tex, color: new T.Color(0xd9dee7), side: T.DoubleSide, metalness: 0.0,
+  roughness: 0.30, clearcoat: 1.0, clearcoatRoughness: 0.12,
+  iridescence: 0.0,
+  envMapIntensity: 0.80, specularIntensity: 0.85, ior: 1.46,
+  transparent: true, alphaTest: 0.012, opacity: 1
+});
+mat.onBeforeCompile = (sh)=>{
+  Object.assign(sh.uniforms, uni);
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', '#include <common>\n'+WAVE)
+    .replace('#include <beginnormal_vertex>', `
+      vec3 sheetP; vec3 objectNormal;
+      sheetPoint(uv, sheetP, objectNormal);
+      #ifdef USE_TANGENT
+        vec3 objectTangent = vec3( tangent.xyz );
+      #endif
+    `)
+    .replace('#include <begin_vertex>', 'vec3 transformed = sheetP;');
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>',
+      '#include <common>\nuniform float uRim, uRimA, uSpecA;\nuniform vec3 uRimCol;')
+    // judge the cut against the artwork's own alpha, not alpha*opacity
+    .replace('#include <alphatest_fragment>',
+      'if ( diffuseColor.a / max(opacity,1e-4) < alphaTest ) discard;')
+    .replace('#include <output_fragment>', `
+      float fres = pow(1.0 - clamp(abs(dot(geometry.normal, geometry.viewDir)),0.0,1.0), 3.2);
+      outgoingLight += fres * uRim * uRimCol;
+      float baseA = diffuseColor.a / max(opacity, 1e-4);
+      float outA  = clamp(baseA + fres*uRimA
+                        + uSpecA*dot(outgoingLight, vec3(0.3333)), 0.0, 1.0) * opacity;
+      gl_FragColor = vec4( outgoingLight, outA );
+    `);
+};
+
+const mesh  = new T.Mesh(geo, mat);
+const group = new T.Group(); group.add(mesh); scene.add(group);
+
+// a faint dark cloud so the sheet sits in front of the wordmark
+const haloTex = (()=>{
+  const s=256,c=document.createElement('canvas'); c.width=c.height=s;
+  const x=c.getContext('2d');
+  const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+  g.addColorStop(0,'rgba(0,0,0,.55)'); g.addColorStop(.45,'rgba(0,0,0,.28)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=g; x.fillRect(0,0,s,s);
+  const t=new T.CanvasTexture(c); t.encoding=T.sRGBEncoding; return t;
+})();
+const halo = new T.Mesh(new T.PlaneGeometry(3.9,4.9),
+  new T.MeshBasicMaterial({map:haloTex, transparent:true, depthWrite:false, opacity:0.30}));
+halo.position.z = -0.62; group.add(halo);
+
+/* ======================================================================
+   4. POINTER — drag to turn, hover to light
+   ====================================================================== */
+let dragging=false, dragYaw=0, dragPitch=0, release=0;
+// spin carried after release, in rad/second — integrated with dt so the
+// fling travels the same distance at 60Hz and at 120Hz
+let velYaw=0, velPitch=0, prevYaw=0, prevPitch=0;
+let lastPX=0, lastPY=0, moved=0, overSheet=false, hover=0, hoverTarget=0;
+let quad=null, cursorNow='';
+const mouse = {x:0,y:0,tx:0,ty:0};
+const hintEl = document.getElementById('pp-hint');
+let hintUsed=false;
+
+// JS mirror of the GLSL bend, corners only — enough to know whether the
+// pointer is on the paper
+const _v = new T.Vector3();
+function cornerPoint(qx,qy){
+  const t = uni.uTime.value, ph = uni.uPhase.value;
+  const A = uni.uAmp.value, F = uni.uFreq.value, TWs = uni.uTwist.value;
+  const u = qx, v = qy;
+  const theta = (uu)=> A*(0.10+Math.pow(uu,1.35))*(0.50+0.64*v)
+                      * Math.sin(F*uu + TWs*v + t*0.40 + ph);
+  let x=0,z=0,xe=0,ze=0; const N=20, h=1/N;
+  for(let i=0;i<N;i++){
+    const uu=(i+0.5)*h, w=clamp((u-(uu-0.5*h))/h,0,1);
+    const th=theta(uu), c=Math.cos(th), s=Math.sin(th);
+    xe+=c*h; ze+=s*h; x+=c*h*w; z+=s*h*w;
+  }
+  const yo = 0.021*SH*Math.sin(2.05*u + t*0.47 + ph)
+           + 0.013*SH*Math.sin(3.35*u - 1.55*v + t*0.63 + ph)*(1-0.55*v);
+  return _v.set((x-xe*0.5)*SW, (v-0.5)*SH + yo, (z-ze*0.5)*SW);
+}
+function buildQuad(){
+  const pts=[];
+  for(const [u,v] of [[0,1],[1,1],[1,0],[0,0]]){
+    cornerPoint(u,v).applyMatrix4(group.matrixWorld).project(camera);
+    pts.push([(_v.x*0.5+0.5)*vw, (-_v.y*0.5+0.5)*vh]);
+  }
+  const cx=(pts[0][0]+pts[1][0]+pts[2][0]+pts[3][0])/4;
+  const cy=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
+  quad = pts.map(([x,y])=>[cx+(x-cx)*1.07, cy+(y-cy)*1.07]);
+}
+function inQuad(px,py){
+  if(!quad) return false;
+  let sign=0;
+  for(let i=0;i<4;i++){
+    const [ax,ay]=quad[i], [bx,by]=quad[(i+1)%4];
+    const c=(bx-ax)*(py-ay)-(by-ay)*(px-ax);
+    if(c!==0){ const s=c>0?1:-1; if(sign===0) sign=s; else if(s!==sign) return false; }
+  }
+  return true;
+}
+function useHint(){ hintUsed=true; hintEl.style.opacity='0'; }
+
+const hostLive = () => { const r = hostRect(); return r.width > 4 && r.height > 4; };
+const clamp1 = (v) => v < -1 ? -1 : v > 1 ? 1 : v;
+window.addEventListener('pointermove', e=>{
+  if(!hostLive()) return;
+  const hr = hostRect(), px = e.clientX - hr.left, py = e.clientY - hr.top;
+  mouse.tx = clamp1((px/vw - 0.5)*2);
+  mouse.ty = clamp1((py/vh - 0.5)*2);
+  if(dragging){
+    const dx=px-lastPX, dy=py-lastPY;
+    lastPX=px; lastPY=py; moved+=Math.abs(dx)+Math.abs(dy);
+    dragYaw   += dx*0.0060;                   // glass prints through, so a
+    dragPitch  = clamp(dragPitch - dy*0.0045, -0.60, 0.60);  // full turn is honest
+    if(moved>40) useHint();
+    return;
+  }
+  overSheet = inQuad(px,py);
+  hoverTarget = overSheet ? 1 : 0;
+}, {passive:true});
+
+window.addEventListener('pointerdown', e=>{
+  if(!hostLive()) return;
+  const hr = hostRect(), px = e.clientX - hr.left, py = e.clientY - hr.top;
+  if(inQuad(px,py)){
+    dragging=true; moved=0; lastPX=px; lastPY=py;
+    velYaw=velPitch=0; prevYaw=dragYaw; prevPitch=dragPitch;
+  }
+});
+window.addEventListener('pointerup', ()=>{
+  if(dragging){ dragging=false; release=0.6; }
+});
+window.addEventListener('pointerleave', ()=>{ hoverTarget=0; });
+
+/* ======================================================================
+   5. RESIZE
+   ====================================================================== */
+let vw=0, vh=0;
+function resize(){
+  const hr = hostRect(); vw = Math.max(1, hr.width); vh = Math.max(1, hr.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, matchMedia('(pointer: coarse)').matches ? 1.5 : 2));
+  renderer.setSize(vw,vh,false);
+  camera.aspect = vw/vh; camera.updateProjectionMatrix();
+  const visH = 2*camera.position.z*Math.tan(T.MathUtils.degToRad(camera.fov)/2);
+  const visW = visH*camera.aspect;
+  const wCap = Math.min(0.88, 0.60 + Math.max(0, 1.45 - camera.aspect)*0.45);
+  group.scale.setScalar(Math.min(visH*0.735/SH, visW*wCap/SW));
+}
+window.addEventListener('resize', resize);
+new ResizeObserver(resize).observe(HOST);
+
+/* ======================================================================
+   6. LOOP
+   ====================================================================== */
+const clock = new T.Clock();
+const lightPos = new T.Vector3();
+let intro = 0;
+
+let paperVisible = false, paperRaf = 0, paperReady = false;
+const paperMenu = document.querySelector('.menu');
+function paperActive() { return paperReady && paperVisible && !document.hidden && paperMenu.classList.contains('open'); }
+function syncPaperPlayback() {
+  if (!paperActive()) { cancelAnimationFrame(paperRaf); paperRaf = 0; return; }
+  if (!paperRaf) { clock.getDelta(); paperRaf = requestAnimationFrame(frame); }
+}
+new IntersectionObserver((es)=>{ paperVisible = es.some(e=>e.isIntersecting); syncPaperPlayback(); }, {threshold:0}).observe(HOST);
+new MutationObserver(syncPaperPlayback).observe(paperMenu, { attributes: true, attributeFilter: ['class'] });
+document.addEventListener('visibilitychange', syncPaperPlayback);
+function frame(){
+  paperRaf = 0;
+  if (!paperActive()) return;
+  paperRaf = requestAnimationFrame(frame);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t  = clock.elapsedTime;
+  uni.uTime.value = REDUCED ? 2.4 : t;
+
+  intro += (1 - intro) * Math.min(1, dt*1.9);
+  mat.opacity = intro;
+  halo.material.opacity = intro*0.30;
+  if(intro > 0.7 && !hintUsed) hintEl.style.opacity='1';
+
+  if(dragging){
+    // measure the throw as an angular velocity, smoothed over a few frames
+    const k = Math.min(1, dt*14);
+    velYaw   += ((dragYaw   - prevYaw  )/Math.max(dt,1e-3) - velYaw  ) * k;
+    velPitch += ((dragPitch - prevPitch)/Math.max(dt,1e-3) - velPitch) * k;
+    velYaw   = clamp(velYaw,  -7, 7);
+    velPitch = clamp(velPitch,-4, 4);
+  } else {
+    dragYaw   += velYaw*dt;
+    dragPitch  = clamp(dragPitch + velPitch*dt, -0.60, 0.60);
+    const decay = Math.pow(0.018, dt);
+    velYaw *= decay; velPitch *= decay;
+    release = Math.max(0, release - dt);
+    if(release <= 0){
+      // settle on the nearest whole turn rather than unwinding a full spin
+      const home = Math.round(dragYaw/(Math.PI*2))*Math.PI*2;
+      const k = Math.min(1, dt*0.55);
+      dragYaw   += (home - dragYaw)*k;
+      dragPitch -= dragPitch*k;
+    }
+  }
+  prevYaw = dragYaw; prevPitch = dragPitch;
+
+  mouse.x += (mouse.tx-mouse.x)*Math.min(1,dt*3.0);
+  mouse.y += (mouse.ty-mouse.y)*Math.min(1,dt*3.0);
+  const idle = REDUCED ? 0 : 1;
+  const rise = 1 - intro;
+  group.rotation.y = dragYaw + mouse.x*0.16 + Math.sin(t*0.23)*0.045*idle;
+  group.rotation.x = dragPitch - mouse.y*0.11 + Math.sin(t*0.19)*0.026*idle + rise*0.28;
+  group.rotation.z = Math.sin(t*0.27)*0.018*idle;
+  group.position.y = Math.sin(t*0.36)*0.06*idle - rise*0.7;
+  group.position.x = Math.sin(t*0.21)*0.05*idle + mouse.x*0.10;
+  group.updateMatrixWorld();
+
+  hover += (hoverTarget - hover) * Math.min(1, dt*4.5);
+  touchLight.intensity = hover * 2.6 * intro;
+  if(hover > 0.002){
+    lightPos.set(mouse.tx, -mouse.ty, 0.5).unproject(camera).sub(camera.position).normalize();
+    touchLight.position.copy(camera.position)
+      .addScaledVector(lightPos, (1.75 - camera.position.z)/lightPos.z);
+  }
+
+  buildQuad();
+  const wantCursor = dragging ? 'grabbing' : (overSheet ? 'grab' : '');
+  if(wantCursor !== cursorNow){ cursorNow = wantCursor; document.body.style.cursor = wantCursor; }
+
+  renderer.render(scene,camera);
+}
+
+function boot(){
+  const t2 = makeCertTexture();
+  tex.dispose(); mat.map = t2; mat.needsUpdate = true;
+  resize();
+  mesh.visible = true; mat.opacity = 0.002;
+  renderer.compile(scene,camera); renderer.render(scene,camera);
+  mat.opacity = 1;
+  paperReady = true; syncPaperPlayback();
+  document.querySelector('.menu').dataset.paperReady = 'true';
+}
+
+if(document.fonts && document.fonts.ready){
+  Promise.race([
+    Promise.all([
+      document.fonts.load('700 104px "Inter Tight"'),
+      document.fonts.load('600 110px "Inter Tight"'),
+      document.fonts.load('600 34px "Inter"'),
+      document.fonts.load('500 22px "Inter"')
+    ]).then(()=>document.fonts.ready),
+    new Promise(r=>setTimeout(r,2500))
+  ]).then(boot);
+} else boot();
+
+window.__sheet = {group, mat, uni, renderer, scene, camera, mesh,
+  state:()=>({intro, dragYaw, dragPitch, hover, quad}),
+  hit:(x,y)=>inQuad(x,y),
+  spin:(y)=>{ dragYaw=y; release=1e9; }};
+})();

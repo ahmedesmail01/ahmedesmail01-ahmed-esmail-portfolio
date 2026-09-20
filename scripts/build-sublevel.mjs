@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { profile, projects, services, skills } from '../lib/content.ts';
 import { customizeRuntime } from './sublevel-runtime-content.mjs';
+import { optimizeRuntime } from './sublevel-performance-runtime.mjs';
+import { splitAssets } from './sublevel-assets.mjs';
 
 // Start from the verified, unmodified source every time. Only business content
 // and the explicitly documented application integration are changed.
@@ -117,5 +119,6 @@ replace('<body>', '<body>\n<div id="lab" aria-hidden="true" style="position:abso
 replace('</head>', `<style id="ahmed-content-fit">\n/* Fit Ahmed’s contact address while retaining the authored layout. */\n.contact .mail{font-size:clamp(18px,3.5vw,52px);line-height:1.2;white-space:normal;overflow-wrap:anywhere}\n.menu-foot p{overflow-wrap:anywhere}\n.form-feedback{font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--w2)}\n:focus-visible{outline:2px solid var(--o);outline-offset:4px}\n</style>\n</head>`);
 
 await mkdir(new URL('public/landing-pages/', root), { recursive: true });
+html = await splitAssets(optimizeRuntime(html), root);
 await writeFile(new URL('public/landing-pages/sublevel-studio.html', root), html);
 console.log('Generated Ahmed’s homepage from verified Sublevel source.');
