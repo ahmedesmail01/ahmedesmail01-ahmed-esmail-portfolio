@@ -1,0 +1,3 @@
+# Preserve the exact bytes used by the landing-page source integrity checks.
+/vendor/threeui/upstream/*.html text eol=lf
+/public/landing-pages/inner-green-assets/three.min.js text eol=lf
