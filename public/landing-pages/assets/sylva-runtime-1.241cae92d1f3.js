@@ -1,5 +1,6 @@
 function installSylvaScheduler() {
   let hostVisible = true;
+  const mobile = window.matchMedia('(max-width: 600px), (pointer: coarse)');
   const listeners = new Set();
   const notify = () => listeners.forEach((listener) => listener());
   window.addEventListener('message', (event) => {
@@ -15,11 +16,15 @@ function installSylvaScheduler() {
       let visible = true;
       let pending = true;
       let frame = 0;
+      let lastDraw = -Infinity;
       function schedule() {
         if (pending && visible && hostVisible && !document.hidden && !frame) {
           frame = requestAnimationFrame((now) => {
             frame = 0;
-            pending = draw(now) !== false;
+            if (!mobile.matches || now - lastDraw >= 1000 / 30 - 0.5) {
+              lastDraw = now;
+              pending = draw(now) !== false;
+            }
             schedule();
           });
         }
@@ -31,6 +36,7 @@ function installSylvaScheduler() {
       function refresh() {
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
+        lastDraw = -Infinity;
         invalidate();
       }
       if ('IntersectionObserver' in window) {

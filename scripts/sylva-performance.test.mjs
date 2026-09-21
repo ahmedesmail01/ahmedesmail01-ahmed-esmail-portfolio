@@ -4,7 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { installSylvaScheduler } from './sylva-performance-runtime.mjs';
 
-function harness() {
+function harness(mobile = false) {
   const scheduled = new Map();
   const observers = [];
   let nextId = 0;
@@ -16,7 +16,7 @@ function harness() {
       emit(name, event) { handlers.get(name)?.(event); },
     };
   }
-  const window = { ...eventTarget(), location: { origin: 'https://portfolio.test' }, parent: {} };
+  const window = { ...eventTarget(), location: { origin: 'https://portfolio.test' }, parent: {}, matchMedia: () => ({ matches: mobile }) };
   const document = { ...eventTarget(), hidden: false };
   class IntersectionObserver {
     constructor(callback) { this.callback = callback; observers.push(this); }
@@ -31,8 +31,8 @@ function harness() {
   return {
     window, document, observers, scheduled,
     loop: window.__sylvaRuntime.createLoop,
-    frame() {
-      now += 17;
+    frame(elapsed = 17) {
+      now += elapsed;
       const callbacks = [...scheduled.values()];
       scheduled.clear();
       callbacks.forEach((callback) => callback(now));
@@ -42,6 +42,38 @@ function harness() {
     },
   };
 }
+
+test('mobile playback caps draws at 30 FPS even with repeated invalidation', () => {
+  const h = harness(true);
+  let draws = 0;
+  const loop = h.loop(() => { draws++; return true; }, {});
+  loop.invalidate();
+  for (let i = 0; i < 120; i++) {
+    loop.invalidate();
+    h.frame(1000 / 120);
+  }
+  assert.equal(draws, 30);
+  h.host(false);
+  assert.equal(h.scheduled.size, 0);
+  h.host(true);
+  h.frame(1);
+  assert.equal(draws, 31, 'Resuming visibility should paint immediately');
+});
+
+test('mobile static scenes stop scheduling and redraw after invalidation', () => {
+  const h = harness(true);
+  let draws = 0;
+  const loop = h.loop(() => { draws++; return false; }, {});
+  loop.invalidate();
+  h.frame();
+  assert.equal(h.scheduled.size, 0);
+  loop.invalidate();
+  h.frame();
+  assert.equal(draws, 1, 'Invalidation must respect the mobile frame budget');
+  h.frame();
+  assert.equal(draws, 2);
+  assert.equal(h.scheduled.size, 0);
+});
 
 test('continuous playback suspends offscreen and resumes once without duplicate frames', () => {
   const h = harness();

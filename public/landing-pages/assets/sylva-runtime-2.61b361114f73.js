@@ -530,7 +530,7 @@ let needResize = true;
 function resize(){
   const r  = stage.getBoundingClientRect();
   const br = btn.getBoundingClientRect();
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  DPR = Math.min(window.devicePixelRatio || 1, matchMedia('(max-width: 600px), (pointer: coarse)').matches ? 1 : 2);
   const w = Math.max(2, Math.round(r.width  * DPR));
   const h = Math.max(2, Math.round(r.height * DPR));
   if(w !== W || h !== H){ W = w; H = h; cv.width = W; cv.height = H; }
