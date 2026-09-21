@@ -7,16 +7,19 @@ import { installSylvaScheduler } from './sylva-performance-runtime.mjs';
 function harness(mobile = false) {
   const scheduled = new Map();
   const observers = [];
+  const timers = new Map();
   let nextId = 0;
   let now = 0;
   function eventTarget() {
     const handlers = new Map();
     return {
       addEventListener(name, handler) { handlers.set(name, handler); },
+      removeEventListener(name) { handlers.delete(name); },
       emit(name, event) { handlers.get(name)?.(event); },
     };
   }
-  const window = { ...eventTarget(), location: { origin: 'https://portfolio.test' }, parent: {}, matchMedia: () => ({ matches: mobile }) };
+  const parent = { ...eventTarget(), document: {} };
+  const window = { ...eventTarget(), location: { origin: 'https://portfolio.test' }, parent, matchMedia: () => ({ matches: mobile }) };
   const document = { ...eventTarget(), hidden: false };
   class IntersectionObserver {
     constructor(callback) { this.callback = callback; observers.push(this); }
@@ -27,9 +30,16 @@ function harness(mobile = false) {
     window, document, IntersectionObserver,
     requestAnimationFrame(callback) { scheduled.set(++nextId, callback); return nextId; },
     cancelAnimationFrame(id) { scheduled.delete(id); },
+    setTimeout(callback) { timers.set(++nextId, callback); return nextId; },
+    clearTimeout(id) { timers.delete(id); },
   });
   return {
-    window, document, observers, scheduled,
+    window, parent, document, observers, scheduled, timers,
+    settleScroll() {
+      const callbacks = [...timers.values()];
+      timers.clear();
+      callbacks.forEach(callback => callback());
+    },
     loop: window.__sylvaRuntime.createLoop,
     frame(elapsed = 17) {
       now += elapsed;
@@ -42,6 +52,42 @@ function harness(mobile = false) {
     },
   };
 }
+
+test('mobile scroll pauses all scene work until scrolling settles', () => {
+  const h = harness(true);
+  let draws = 0;
+  const loop = h.loop(() => { draws++; return true; }, {});
+  loop.invalidate();
+  h.frame();
+  h.parent.emit('scroll');
+  assert.equal(h.scheduled.size, 0);
+  loop.invalidate();
+  h.window.emit('touchmove');
+  h.parent.emit('scroll');
+  h.frame();
+  assert.equal(draws, 1);
+  assert.equal(h.timers.size, 1, 'Repeated events replace the resume timer');
+  h.settleScroll();
+  h.frame();
+  assert.equal(draws, 2);
+  h.parent.emit('scroll');
+  h.host(false);
+  h.settleScroll();
+  assert.equal(h.scheduled.size, 0, 'Finishing a scroll cannot wake an offscreen hero');
+});
+
+test('desktop scroll keeps playback running and mobile cleanup removes parent listeners', () => {
+  const desktop = harness();
+  desktop.loop(() => true, {}).invalidate();
+  desktop.parent.emit('scroll');
+  assert.equal(desktop.scheduled.size, 1);
+  assert.equal(desktop.timers.size, 0);
+  const mobile = harness(true);
+  mobile.parent.emit('scroll');
+  mobile.window.emit('pagehide', { persisted: false });
+  mobile.parent.emit('scroll');
+  assert.equal(mobile.timers.size, 0);
+});
 
 test('mobile playback caps draws at 30 FPS even with repeated invalidation', () => {
   const h = harness(true);
