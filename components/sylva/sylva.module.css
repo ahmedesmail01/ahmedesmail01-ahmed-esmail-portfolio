@@ -34,7 +34,7 @@
 .projectImage:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#15221115,#15221100 50%,#15221155);pointer-events:none}
 .projectImage img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1);filter:saturate(.72)}
 .projectCard:hover .projectImage img{transform:scale(1.035)}
-.imageBadge{position:absolute;left:22px;top:22px;z-index:1;padding:6px 13px;background:#f0f2eae8;color:#354030;border-radius:50px;font-size:10px;font-weight:400;backdrop-filter:blur(6px)}
+.imageBadge{position:absolute;left:22px;top:22px;z-index:1;padding:6px 13px;background:#f0f2eae8;color:#354030;border-radius:50px;font-size:10px;font-weight:400}
 .imageNumber{position:absolute;right:23px;top:24px;color:white;font-size:12px;z-index:1;text-shadow:0 1px 5px #000}
 .roundArrow{position:absolute;bottom:22px;right:22px;z-index:1;display:grid;place-items:center;border-radius:50%;width:53px;height:53px;background:var(--cream);color:var(--dark);transition:transform .25s}
 .projectCard:hover .roundArrow{transform:rotate(45deg)}

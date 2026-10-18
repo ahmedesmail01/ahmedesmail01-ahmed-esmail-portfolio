@@ -590,17 +590,9 @@ calm.addEventListener('change', () => {
 let pendingPointer = null;
 let drawn = null;                  // signature of the last frame actually drawn
 
-/* HOST ADAPTATION — idle frame cap.
-   The authored scene owns its page and can afford to run all twenty passes
-   every frame forever, because the rim keeps travelling even at rest. Here
-   two of these sit on top of a hero that is already rendering 190k blades of
-   moss, and measured together they were halving the whole page: 50 fps with
-   them, 92 without.
-   Nothing is removed — the cap only applies while the button is genuinely
-   idle, and the rim's travel is 0.07 laps a second, so 30 Hz is far more than
-   it needs. The moment a pointer, a press, a focus or a ripple is in play it
-   goes back to running every frame, because that is when the metal has to
-   track the cursor. */
+/* Idle controls retain their last composited frame. Hover, focus, presses
+   and their exit transitions resume the full liquid effect. The throttle
+   only limits repeated invalidations while a resting control is resized. */
 const IDLE_HZ = 30;
 let lastDraw = 0;
 
@@ -642,13 +634,11 @@ function frame(now){
 
   if(needResize) resize();
 
-  // The rim keeps travelling even at rest, so the only truly static case is
-  // reduced motion with nothing in flight.
-  const sig = (calm.matches && !ripLive && ptrAmt < 0.002)
-    ? `${hover}|${press}|${W}|${H}` : null;
-  if(sig !== null && sig === drawn) return false;
   const idle = !on.over && !on.press && !on.focus && !ripLive
             && hover < 0.002 && press < 0.002 && ptrAmt < 0.002;
+  const sig = ((calm.matches || idle) && !ripLive && ptrAmt < 0.002)
+    ? `${hover}|${press}|${W}|${H}` : null;
+  if(sig !== null && sig === drawn) return false;
   if(idle && now - lastDraw < 1000 / IDLE_HZ) return true;
   lastDraw = now;
   drawn = sig;
@@ -755,7 +745,7 @@ function frame(now){
   gl.uniform1f(pComp.u.uPunch, C.punch);
   drawTo(null);
 
-  return true;
+  return !idle;
 }
 
 /* ---------------- interaction ----------------

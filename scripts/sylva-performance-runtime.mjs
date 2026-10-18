@@ -92,7 +92,7 @@ export function installSylvaScheduler() {
   };
 }
 
-export function optimizeSylvaRuntime(html) {
+export function optimizeSylvaRuntime(html, { wingTextureUrl } = {}) {
   const replace = (before, after) => {
     assert.equal(html.split(before).length, 2, `Expected one Sylva runtime anchor: ${before.slice(0, 90)}`);
     html = html.replace(before, () => after);
@@ -137,12 +137,33 @@ let pendingPointer = null;`);
   const dtRaw`);
   replace('if(sig !== null && sig === drawn){ requestAnimationFrame(frame); return; }', 'if(sig !== null && sig === drawn) return false;');
   replace('const wantWell = (on.over || on.press) ? 1 : 0;', 'const wantWell = !calm.matches && (on.over || on.press) ? 1 : 0;');
-  replace('if(idle && now - lastDraw < 1000 / IDLE_HZ){ requestAnimationFrame(frame); return; }', 'if(idle && now - lastDraw < 1000 / IDLE_HZ) return true;');
   // A throttled resize has not painted its new buffer yet. Record the signature
   // only after passing the throttle, or reduced motion can stop on a blank frame.
   replace('  drawn = sig;\n\n  const idle', '  const idle');
+  // These small controls used to run their entire bloom/blur pipeline at
+  // 30 Hz even when nobody touched them. Keep the last composited frame and
+  // resume from it on hover, focus, a press, preference changes or resize.
+  const idleCommentStart = html.indexOf('/* HOST ADAPTATION — idle frame cap.');
+  const idleCommentEnd = html.indexOf('const IDLE_HZ = 30;', idleCommentStart);
+  assert.ok(idleCommentStart > 0 && idleCommentEnd > idleCommentStart, 'Expected the liquid-control idle scheduling notes');
+  replace(html.slice(idleCommentStart, idleCommentEnd), `/* Idle controls retain their last composited frame. Hover, focus, presses
+   and their exit transitions resume the full liquid effect. The throttle
+   only limits repeated invalidations while a resting control is resized. */
+`);
+  replace(`  // The rim keeps travelling even at rest, so the only truly static case is
+  // reduced motion with nothing in flight.
+  const sig = (calm.matches && !ripLive && ptrAmt < 0.002)
+    ? \`\${hover}|\${press}|\${W}|\${H}\` : null;
+  if(sig !== null && sig === drawn) return false;
+  const idle = !on.over && !on.press && !on.focus && !ripLive
+            && hover < 0.002 && press < 0.002 && ptrAmt < 0.002;`, `  const idle = !on.over && !on.press && !on.focus && !ripLive
+            && hover < 0.002 && press < 0.002 && ptrAmt < 0.002;
+  const sig = ((calm.matches || idle) && !ripLive && ptrAmt < 0.002)
+    ? \`\${hover}|\${press}|\${W}|\${H}\` : null;
+  if(sig !== null && sig === drawn) return false;`);
+  replace('if(idle && now - lastDraw < 1000 / IDLE_HZ){ requestAnimationFrame(frame); return; }', 'if(idle && now - lastDraw < 1000 / IDLE_HZ) return true;');
   replace('  lastDraw = now;\n\n  for(let i = 0;', '  lastDraw = now;\n  drawn = sig;\n\n  for(let i = 0;');
-  replace('  requestAnimationFrame(frame);\n}\n\n/* ---------------- interaction', '  return true;\n}\n\n/* ---------------- interaction');
+  replace('  requestAnimationFrame(frame);\n}\n\n/* ---------------- interaction', '  return !idle;\n}\n\n/* ---------------- interaction');
   replace("  document.body.classList.toggle('press', on.press);", "  document.body.classList.toggle('press', on.press);\n  frameLoop.invalidate();");
   replace('  if(!on.over && !on.press) return;\n  [ptr.x, ptr.y] = localPt(e);', '  if(!on.over && !on.press) return;\n  pendingPointer = { clientX: e.clientX, clientY: e.clientY };\n  frameLoop.invalidate();');
   replace('resize();\nrequestAnimationFrame(frame);', 'resize();\nframeLoop.invalidate();');
@@ -189,15 +210,83 @@ let pendingPointer = null;`);
       pointerPosition = null;
     }
     drawDock(dtUI);`);
+  // Read the specular targets before magnification changes pill dimensions.
+  // The opposite order forces layout during every active pointer frame.
+  replace('    drawDock(dtUI);\n    drawSpec(dtUI);', '    drawSpec(dtUI);\n    drawDock(dtUI);');
   replace('    if (REDUCED || parOn) return;\n    parOn = true;', '    if (parallaxBound) return;\n    parallaxBound = true;\n    parOn = !REDUCED;');
   replace('      if (e.pointerType === \'touch\') return;\n      pointer.x', '      if (e.pointerType === \'touch\' || REDUCED) return;\n      pointer.x');
   replace(`      var r = hero.getBoundingClientRect();
       ndc.x =  ((e.clientX - r.left) / r.width) * 2 - 1;
       ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;`, '      pointerPosition = { x: e.clientX, y: e.clientY };');
   replace('      pointer.x = pointer.y = 0; ndc.x = 10;', '      pointer.x = pointer.y = 0; ndc.x = 10; pointerPosition = null;');
+  // Geometry is deterministic, but its noise and planting loops used to run
+  // as single long tasks. Yield within those loops once the eight-ms budget
+  // is spent, preserving the RNG sequence and every generated attribute.
+  replace('  function tessellate(L, bag) {', `  var geometryTaskStarted = performance.now();
+  function yieldGeometry() {
+    var continuation = globalThis.scheduler && typeof globalThis.scheduler.yield === 'function'
+      ? globalThis.scheduler.yield()
+      : new Promise(function (resolve) { setTimeout(resolve, 0); });
+    return continuation.then(function () { geometryTaskStarted = performance.now(); });
+  }
+
+  async function tessellate(L, bag) {`);
+  replace(`    for (i = 0; i <= S; i++) {
+      for (j = 0; j <= R; j++) {
+        var cap = limbSurface`, `    for (i = 0; i <= S; i++) {
+      if ((i & 3) === 0 && performance.now() - geometryTaskStarted >= 8) await yieldGeometry();
+      for (j = 0; j <= R; j++) {
+        var cap = limbSurface`);
+  replace(`    for (i = 0; i <= S; i++) {
+      for (j = 0; j <= R; j++) {
+        get(i + 1`, `    for (i = 0; i <= S; i++) {
+      if ((i & 7) === 0 && performance.now() - geometryTaskStarted >= 8) await yieldGeometry();
+      for (j = 0; j <= R; j++) {
+        get(i + 1`);
+  replace('  function plantBlades(L, count, bag) {', '  async function plantBlades(L, count, bag) {');
+  replace('    for (var b = 0; b < count; b++) {', `    for (var b = 0; b < count; b++) {
+      if ((b & 255) === 0 && performance.now() - geometryTaskStarted >= 8) await yieldGeometry();`);
+  replace('  function assembleRoot(limbs, opt) {', '  async function assembleRoot(limbs, opt) {');
+  replace('for (var i = 0; i < limbs.length; i++) tessellate(limbs[i], bag);', 'for (var i = 0; i < limbs.length; i++) await tessellate(limbs[i], bag);');
+  replace('      plantBlades(limbs[i], Math.round(opt.blades * limbs[i].len / total), fur);', '      await plantBlades(limbs[i], Math.round(opt.blades * limbs[i].len / total), fur);');
   replace('  function build() {', '  async function build() {');
-  replace('    var nearLimbs = buildNearRoot();', '    var nearLimbs = buildNearRoot();\n    await new Promise(resolve => setTimeout(resolve, 0));');
-  replace('    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni);', '    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni);\n    await new Promise(resolve => setTimeout(resolve, 0));');
+  replace('    var nearLimbs = buildNearRoot();', '    var nearLimbs = buildNearRoot();\n    await yieldGeometry();');
+  replace('    nearGroup = assembleRoot(nearLimbs, {', '    nearGroup = await assembleRoot(nearLimbs, {');
+  replace('    farGroup = assembleRoot(buildFarRoot(), {', '    farGroup = await assembleRoot(buildFarRoot(), {');
+  replace('    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni);', '    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni);\n    await yieldGeometry();');
+  if (wingTextureUrl) {
+    const start = html.indexOf('  function wingTexture() {');
+    const end = html.indexOf('\n  function wingMaterial(', start);
+    assert.ok(start > 0 && end > start, 'Expected the archived butterfly texture recipe');
+    replace(html.slice(start, end), `  function wingTexture() {
+    return new Promise(function (resolve) {
+      new THREE.TextureLoader().load(${JSON.stringify(wingTextureUrl)}, function (texture) {
+        texture.flipY = false;
+        texture.premultiplyAlpha = false;
+        texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+        resolve(texture);
+      }, undefined, function () { resolve(null); });
+    });
+  }
+`);
+    // Download while the roots grow; phones do not need this texture.
+    replace('    var small = narrow || (window.innerWidth * window.innerHeight) < 620000;', '    var small = narrow || (window.innerWidth * window.innerHeight) < 620000;\n    var butterflyTexture = !small ? wingTexture() : null;');
+    replace('  function buildButterfly(host, limbs, uni) {', '  function buildButterfly(host, limbs, uni, textureReady) {');
+    // Keep constructing synchronously so the seeded geometry remains identical.
+    // The optional butterfly appears once its image is ready; roots can paint
+    // immediately even on a slow connection or if this image cannot be fetched.
+    replace('    var tex = wingTexture();', `    var tex = new THREE.Texture();
+    group.visible = false;
+    textureReady.then(function (loaded) {
+      if (!loaded) return;
+      tex.copy(loaded);
+      tex.needsUpdate = true;
+      loaded.dispose();
+      group.visible = true;
+      startTick();
+    });`);
+    replace('    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni);', '    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni, butterflyTexture);');
+  }
   replace("    window.addEventListener('resize', layout);", "    window.addEventListener('resize', function () { layout(); startTick(); });");
   replace('    try { build(); }\n    catch (err) { console.error(err); }', '    build().catch(function (err) { console.error(err); });');
   return html;
@@ -246,7 +335,7 @@ export async function splitSylvaAssets(html, root) {
   }
   // Only prune this generator's own assets; Sublevel shares the directory.
   for (const filename of await readdir(directory)) {
-    if (filename.startsWith('sylva-') && !published.has(filename)) await rm(new URL(filename, directory));
+    if (filename.startsWith('sylva-') && !filename.startsWith('sylva-wing.') && !published.has(filename)) await rm(new URL(filename, directory));
   }
   return html;
 }

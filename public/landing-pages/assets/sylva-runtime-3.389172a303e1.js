@@ -75,8 +75,8 @@
       ndc.y = -((pointerPosition.y - bounds.top) / bounds.height) * 2 + 1;
       pointerPosition = null;
     }
-    drawDock(dtUI);
     drawSpec(dtUI);
+    drawDock(dtUI);
     aimMoved = false;
     if (parOn) {
       smooth.x += (pointer.x - smooth.x) * 0.055;
@@ -666,7 +666,15 @@
 
   /* ---- mesh: build the (segs+1) × (radial+1) grid, then take the normal
           from the grid itself so the displacement is lit, not the tube ---- */
-  function tessellate(L, bag) {
+  var geometryTaskStarted = performance.now();
+  function yieldGeometry() {
+    var continuation = globalThis.scheduler && typeof globalThis.scheduler.yield === 'function'
+      ? globalThis.scheduler.yield()
+      : new Promise(function (resolve) { setTimeout(resolve, 0); });
+    return continuation.then(function () { geometryTaskStarted = performance.now(); });
+  }
+
+  async function tessellate(L, bag) {
     var S = L.segs, R = L.radial;
     var base = bag.pos.length / 3;
     var grid = new Float32Array((S + 1) * (R + 1) * 3);
@@ -676,6 +684,7 @@
     var i, j, k;
 
     for (i = 0; i <= S; i++) {
+      if ((i & 3) === 0 && performance.now() - geometryTaskStarted >= 8) await yieldGeometry();
       for (j = 0; j <= R; j++) {
         var cap = limbSurface(L, i / S, (j / R) * TAU, p, n);
         k = (i * (R + 1) + j) * 3;
@@ -693,6 +702,7 @@
     }
 
     for (i = 0; i <= S; i++) {
+      if ((i & 7) === 0 && performance.now() - geometryTaskStarted >= 8) await yieldGeometry();
       for (j = 0; j <= R; j++) {
         get(i + 1, j, a); get(i - 1, j, b); du.subVectors(a, b);
         get(i, j + 1, a); get(i, j - 1, b); dv.subVectors(a, b);
@@ -722,7 +732,7 @@
           guarantees the fur sits exactly on the surface that gets drawn.
           Cells are drawn in proportion to area x moss, so density follows the
           cushion rather than the tube's parameterisation. ---- */
-  function plantBlades(L, count, bag) {
+  async function plantBlades(L, count, bag) {
     var S = L.S, R = L.R, grid = L.grid, gn = L.gnrm, caps = L.gcaps;
     if (!grid) return 0;
     var cells = S * R, cdf = new Float64Array(cells), total = 0;
@@ -743,6 +753,7 @@
 
     var planted = 0;
     for (var b = 0; b < count; b++) {
+      if ((b & 255) === 0 && performance.now() - geometryTaskStarted >= 8) await yieldGeometry();
       /* binary search the area-weighted cell distribution */
       var target = rng() * total, lo = 0, hi = cells - 1;
       while (lo < hi) { var mid = (lo + hi) >> 1; if (cdf[mid] < target) lo = mid + 1; else hi = mid; }
@@ -1544,7 +1555,7 @@
   }
 
   /* one root: bark shell + fur + ferns + flowers, all under a single group */
-  function assembleRoot(limbs, opt) {
+  async function assembleRoot(limbs, opt) {
     var group = new THREE.Group();
     var uni = lightUniforms({
       uBoxH:   { value: BOXW / opt.aspect },
@@ -1563,7 +1574,7 @@
 
     /* ---- shell ---- */
     var bag = { pos: [], nor: [], inf: [], idx: [] };
-    for (var i = 0; i < limbs.length; i++) tessellate(limbs[i], bag);
+    for (var i = 0; i < limbs.length; i++) await tessellate(limbs[i], bag);
     var geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(bag.pos, 3));
     geo.setAttribute('normal', new THREE.Float32BufferAttribute(bag.nor, 3));
@@ -1581,7 +1592,7 @@
     var total = 0;
     for (i = 0; i < limbs.length; i++) total += limbs[i].len;
     for (i = 0; i < limbs.length; i++) {
-      plantBlades(limbs[i], Math.round(opt.blades * limbs[i].len / total), fur);
+      await plantBlades(limbs[i], Math.round(opt.blades * limbs[i].len / total), fur);
     }
     var bg = bladeGeometry();
     bg.setAttribute('offset', new THREE.InstancedBufferAttribute(new Float32Array(fur.off), 3));
@@ -1710,6 +1721,7 @@
     var narrow = NARROW.matches;
     var mobile = matchMedia('(max-width: 600px), (pointer: coarse)').matches;
     var small = narrow || (window.innerWidth * window.innerHeight) < 620000;
+    var butterflyTexture = !small ? wingTexture() : null;
     var BLADES_NEAR = mobile ? 24000 : small ? 50000 : 95000;
     var BLADES_FAR  = mobile ? 6000 : small ? 15000 : 30000;
 
@@ -1729,7 +1741,7 @@
 
     /* ---- near root ---- */
     var nearLimbs = buildNearRoot();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await yieldGeometry();
     var mainCount = nearLimbs.length;
     /* a scatter of stubby offshoots, so the tubes never read as hoses */
     var hp = new THREE.Vector3(), hn = new THREE.Vector3();
@@ -1749,21 +1761,21 @@
     }
     nearLimbs = nearLimbs.concat(extra);
 
-    nearGroup = assembleRoot(nearLimbs, {
+    nearGroup = await assembleRoot(nearLimbs, {
       aspect: ARCH.aspect, haze: 0.15, fog: 0.0, alpha: 1.0, order: 2,
       blades: BLADES_NEAR, ferns: small ? 26 : 46, flowers: small ? 120 : 260,
       fernSize: [0.22, 0.50], flowerSize: [0.055, 0.118], mainLimbs: mainCount, wire: true,
       mouse: uMouseNear, mouseR: 1.20
     });
     scene.add(nearGroup);
-    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni);
-    await new Promise(resolve => setTimeout(resolve, 0));
+    if (!small) bf = buildButterfly(nearGroup, nearLimbs, nearGroup.userData.uni, butterflyTexture);
+    await yieldGeometry();
 
     /* ---- far ridge: same builder, pushed back and washed into the air.
             It dissolves before it reaches the cards (local x 0.5 → 4.0) and
             into the floor light below it (lower 0/42% of its box) — the same
             two masks the artwork build carried in its own shader. ---- */
-    farGroup = assembleRoot(buildFarRoot(), {
+    farGroup = await assembleRoot(buildFarRoot(), {
       aspect: FAR.aspect, haze: 0.16, fog: 0.26, alpha: 1.0, order: 0,
       /* dimmer air than the near root's: at 0.46 of the pale tone the ridge
          lost its silhouette entirely and read as a smudge on the background */
@@ -2070,47 +2082,14 @@
      noise octaves per fragment per frame was paying over and over for a
      constant. R rows, G grain, B mottle, A shimmer. */
   function wingTexture() {
-    var N = 256, cv = document.createElement('canvas'); cv.width = cv.height = N;
-    var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N), d = img.data;
-    function h2(x, y) {
-      var a = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
-      var b = Math.sin(x * 269.5 + y * 183.3) * 43758.5453123;
-      return [(a - Math.floor(a)) * 2 - 1, (b - Math.floor(b)) * 2 - 1];
-    }
-    function gn(x, y) {
-      var ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
-      var ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
-      var g00 = h2(ix, iy), g10 = h2(ix + 1, iy), g01 = h2(ix, iy + 1), g11 = h2(ix + 1, iy + 1);
-      var a = g00[0] * fx + g00[1] * fy, b = g10[0] * (fx - 1) + g10[1] * fy;
-      var c = g01[0] * fx + g01[1] * (fy - 1), e = g11[0] * (fx - 1) + g11[1] * (fy - 1);
-      var top = a + (b - a) * ux, bot = c + (e - c) * ux;
-      return top + (bot - top) * uy;
-    }
-    function fb(x, y, oct) {
-      var sum = 0, amp = 0.5;
-      for (var i = 0; i < oct; i++) {
-        sum += amp * gn(x, y);
-        var nx = 0.8 * x + 0.6 * y, ny = -0.6 * x + 0.8 * y;
-        x = nx * 2.03; y = ny * 2.03; amp *= 0.5;
-      }
-      return sum;
-    }
-    var b255 = function (v) { return Math.max(0, Math.min(255, Math.round((v * 0.5 + 0.5) * 255))); };
-    for (var yi = 0; yi < N; yi++) {
-      var u = yi / (N - 1);
-      for (var xi = 0; xi < N; xi++) {
-        var sp = xi / (N - 1), o = (yi * N + xi) * 4;
-        d[o]     = b255(fb(u * 70.0, sp * 16.0, 4));
-        d[o + 1] = b255(gn(u * 165.0, sp * 52.0));
-        d[o + 2] = b255(fb(sp * 4.5, u * 3.0, 3));
-        d[o + 3] = b255(fb(sp * 6.5 + 4.0, u * 4.5, 3));
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-    var t = new THREE.CanvasTexture(cv);
-    t.flipY = false;
-    t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-    return t;
+    return new Promise(function (resolve) {
+      new THREE.TextureLoader().load("/landing-pages/assets/sylva-wing.586605b274c6.webp", function (texture) {
+        texture.flipY = false;
+        texture.premultiplyAlpha = false;
+        texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+        resolve(texture);
+      }, undefined, function () { resolve(null); });
+    });
   }
 
   function wingMaterial(hind, bend, tex, uni) {
@@ -2208,10 +2187,19 @@
     });
   }
 
-  function buildButterfly(host, limbs, uni) {
+  function buildButterfly(host, limbs, uni, textureReady) {
     var group = new THREE.Group();
     var bend = { fore: { value: 0 }, hind: { value: 0 } };
-    var tex = wingTexture();
+    var tex = new THREE.Texture();
+    group.visible = false;
+    textureReady.then(function (loaded) {
+      if (!loaded) return;
+      tex.copy(loaded);
+      tex.needsUpdate = true;
+      loaded.dispose();
+      group.visible = true;
+      startTick();
+    });
     var foreG = wingGeometry(false), hindG = wingGeometry(true);
     var foreM = wingMaterial(false, bend.fore, tex, uni), hindM = wingMaterial(true, bend.hind, tex, uni);
 

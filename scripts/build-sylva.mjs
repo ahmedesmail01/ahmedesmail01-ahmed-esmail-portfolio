@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { profile, projects, services, skills } from '../lib/content.ts';
 import { optimizeSylvaRuntime, splitSylvaAssets } from './sylva-performance-runtime.mjs';
+import { buildSylvaWingTexture } from './sylva-wing-texture.mjs';
 
 const root = new URL('../', import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('vendor/threeui/sylva-source.json', root), 'utf8'));
@@ -71,7 +72,8 @@ replace('</body>', `<dialog id="business-dialog" aria-labelledby="business-title
 </body>`);
 await mkdir(new URL('public/landing-pages/', root), { recursive: true });
 for (const block of authoredBlocks) assert.ok(html.includes(block), 'An authored Sylva script or stylesheet changed');
-html = optimizeSylvaRuntime(html);
+const wingTextureUrl = await buildSylvaWingTexture(html, root);
+html = optimizeSylvaRuntime(html, { wingTextureUrl });
 html = await splitSylvaAssets(html, root);
 await writeFile(new URL('public/landing-pages/inner-green-3d.html', root), html);
 console.log('Generated Ahmed’s Sylva homepage from verified source and assets.');

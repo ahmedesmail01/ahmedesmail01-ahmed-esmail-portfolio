@@ -12,10 +12,12 @@
     "dev": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && node scripts/dev-next.mjs",
     "build": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && next build --webpack",
     "start": "node --experimental-strip-types scripts/build-images.mjs && node --experimental-strip-types scripts/build-sublevel.mjs && node --experimental-strip-types scripts/build-sylva.mjs && next dev --hostname 0.0.0.0 --port 5173",
+    "preview": "node scripts/serve-static.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "build:images": "node --experimental-strip-types scripts/build-images.mjs",
-    "test:performance": "node --test scripts/sylva-performance.test.mjs"
+    "test:performance": "node --test scripts/sylva-performance.test.mjs scripts/sylva-wing-texture.test.mjs",
+    "test:preview": "node --test scripts/serve-static.test.mjs"
   },
   "dependencies": {
     "@designcodeio/threeui": "file:vendor/threeui",

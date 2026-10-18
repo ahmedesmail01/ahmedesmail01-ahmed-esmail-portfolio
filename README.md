@@ -16,7 +16,14 @@ Open http://localhost:5173. Use `pnpm build` to generate the deployable `out` di
 
 Production uses Static Site Generation (SSG). `next.config.ts` exports the complete site, and the root layout explicitly rejects request-time server rendering. Project and journal slugs are enumerated by `generateStaticParams()` with `dynamicParams = false`, so only published content has a generated page. Rebuild and redeploy after changing content. Navigation, forms, and the 3D hero remain interactive in the browser.
 
-Both `pnpm dev` and the workspace's `pnpm start` alias run the development server. For production, deploy the generated `out/` directory to your static host; there is no Next.js server process to run.
+Both `pnpm dev` and the workspace's `pnpm start` alias run the development server for live editing. To check production performance locally, build once and serve the exported site:
+
+```text
+pnpm build
+pnpm preview
+```
+
+The production preview serves `out/` at http://127.0.0.1:5173 with Brotli/gzip for text, cache headers, and video byte ranges. It does not regenerate assets or start Next.js development tooling. Rebuild after editing source. Use `pnpm preview --port 5174 --hostname 0.0.0.0` to change the port or allow access from another device. The equivalent npm commands are `npm run build` and `npm run preview`; pass preview options as `npm run preview -- --port 5174 --hostname 0.0.0.0`. For deployment, upload the complete `out/` directory to your static host; there is no Next.js server process to run.
 
 On Vercel, `vercel.json` redirects the Sylva and preserved Sublevel iframe HTML URLs to their clean, trailing-slash URLs. Keep these rules when deploying to Vercel to avoid a 404 inside the iframe. Sylva's generated document includes a `/landing-pages/` base URL so its original relative asset paths work after the redirect. Local development and other static hosts continue using the original HTML paths. Push configuration changes and redeploy for the rules to take effect.
 
@@ -45,7 +52,9 @@ Sylva retains the authored moss, flowers, ferns, pollen, butterfly, liquid-metal
 
 ## Site performance
 
-`pnpm build` produces the optimized static export in `out/`. The development commands intentionally include development tooling; use the exported site when assessing load speed.
+`pnpm build` produces the optimized static export in `out/`. Run `pnpm preview` after building when assessing load speed; `pnpm dev` and `pnpm start` include development tooling and compilation overhead.
+
+The deeper hero pass stops idle liquid-metal render loops, cooperatively yields during geometry generation, and bakes the butterfly noise texture at build time. The optional butterfly image never blocks the roots from rendering. See [the performance audit](docs/performance-audit.md) for findings, tradeoffs, validation and profiling instructions.
 
 - `scripts/build-images.mjs` generates local WebP sizes and `lib/generated/responsive-images.json` from the content images and hero photos. Run `pnpm build:images` after changing image files or adding image sources. Existing matching variants are reused. The generator only prunes its own `public/images/responsive/` directory. Sharp is a build dependency; there is no image server in production.
 - The shared responsive image component reserves intrinsic dimensions, lazy-loads card imagery, and preloads project and article covers with matching `srcset`/`sizes`. It is rendered on the server and ships no image component JavaScript. Project and journal cards defer route prefetching so large detail covers are requested when visitors open them. At 768px, the four portfolio images are 55–69% smaller than their originals; the hero photo cards at 384px are over 90% smaller. These are file-size comparisons, not page-speed scores.
@@ -92,6 +101,6 @@ Images are concept covers; confirm third-party usage rights or replace them with
 
 ## Verification
 
-`pnpm test:performance` checks hero scheduling (visibility, reduced motion, resize invalidation, and message origin) and generated asset references. `pnpm build` also runs TypeScript and statically generates every route. The optimized export was checked on desktop and mobile; all inner routes and the fallback page had no JavaScript errors, broken images, or horizontal overflow. Browser checks confirmed hero pause/resume, reduced-motion resize, section links, card navigation, and contact drafts. Whole-repository lint still reports existing errors in archived components; changed code passes targeted lint.
+`pnpm test:performance` checks hero scheduling (visibility, reduced motion, resize invalidation, and message origin) and generated asset references. `pnpm test:preview` checks production routing, MIME types, compression, caching, video byte ranges, HEAD requests, and path containment through real HTTP requests. `pnpm build` also runs TypeScript and statically generates every route. The optimized export was checked on desktop and mobile; all inner routes and the fallback page had no JavaScript errors, broken images, or horizontal overflow. Browser checks confirmed hero pause/resume, reduced-motion resize, section links, card navigation, and contact drafts. Whole-repository lint still reports existing errors in archived components; changed code passes targeted lint.
 
 Next.js production export and TypeScript checks pass. The expanded site was checked in Chrome at 1440px, 390px, and 320px widths: rendered hero, section navigation and focus, contact deep links, FAQ disclosures, all project/article routes, and article contents links. Mobile menu selection, Escape/focus return, contact validation, populated email drafts, and fallback links also passed; email app launches were intercepted during testing. The mobile hero fits its frame without a nested vertical scroll. A local server emulated the Vercel redirects; route checks found no horizontal overflow, failed requests, or JavaScript errors. Standalone hero dialogs were also checked with a parent-frame fixture. Every generation verifies the source and binary hashes before deriving documented scheduling, loading, and responsive-image changes. Changed files pass ESLint; previously recorded lint errors in older portfolio files remain outside this change. No Lighthouse score is claimed.
