@@ -18,3 +18,26 @@
     height: max(100svh, var(--mobile-hero-height));
   }
 }
+
+.videoDialog {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: min(1100px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 48px 12px 12px;
+  border: 1px solid #ffffff30;
+  border-radius: 20px;
+  background: #161c16;
+  color: #fff;
+  overscroll-behavior: contain;
+}
+
+.videoDialog::backdrop { background: #000c; }
+.videoPanel { position: relative; }
+.videoPanel video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; max-height: calc(100dvh - 110px); border-radius: 10px; background: #000; }
+.closeVideo { position: absolute; right: 0; top: -44px; width: 36px; height: 36px; border: 1px solid #ffffff50; border-radius: 50%; background: transparent; color: #fff; font-size: 26px; cursor: pointer; }
+.closeVideo:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+:global(body):has(.videoDialog[open]) { overflow: hidden; }

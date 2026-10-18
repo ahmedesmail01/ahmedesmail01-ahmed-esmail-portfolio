@@ -36,6 +36,13 @@ export default function Home() {
           <div className={styles.projectGrid}>{featuredProjects.map((project, index) => <ProjectCard key={project.slug} project={project} index={index} />)}</div>
           <p className={styles.sectionNote}>Fittra highlights my frontend contribution. The remaining projects are independent concept studies. Cover images are illustrative.</p>
         </section>
+        <section id="software-vision" tabIndex={-1} className={`${styles.container} ${styles.section}`}>
+          <SectionHeading eyebrow="SOFTWARE VISION" title="A vision brought to life." />
+          <video className={styles.visionVideo} controls playsInline preload="none" poster="/videos/software-vision-poster.jpg" aria-label="Software Vision">
+            <source src="/videos/software-vision.mp4" type="video/mp4" />
+            Your browser does not support video. <a href="/videos/software-vision.mp4">Download the video</a>.
+          </video>
+        </section>
         <section id="services" tabIndex={-1} className={styles.homeServices}>
           <div className={`${styles.container} ${styles.section}`}>
             <SectionHeading eyebrow="02 / HOW I CAN HELP" title="A thoughtful start. A stronger product." description="From a first website to the systems behind it, development shaped around what your business needs.">
