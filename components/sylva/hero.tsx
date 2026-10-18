@@ -9,8 +9,10 @@ import styles from "./hero.module.css";
 export function SylvaHomeHero() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const connectVideo = useCallback((frame: HTMLIFrameElement) => {
+    frameRef.current = frame;
     const trigger = frame.contentDocument?.querySelector<HTMLElement>(".liquid-button--play");
     if (!trigger) return;
     triggerRef.current = trigger;
@@ -21,6 +23,7 @@ export function SylvaHomeHero() {
       event.preventDefault();
       event.stopPropagation();
       dialogRef.current?.showModal();
+      frame.contentWindow?.postMessage({ type: "threeui:occlusion", occluded: true }, window.location.origin);
       void videoRef.current?.play().catch(() => {});
     };
   }, []);
@@ -54,6 +57,7 @@ export function SylvaHomeHero() {
         if (event.target === event.currentTarget) event.currentTarget.close();
       }}
       onClose={() => {
+        frameRef.current?.contentWindow?.postMessage({ type: "threeui:occlusion", occluded: false }, window.location.origin);
         videoRef.current?.pause();
         if (videoRef.current) videoRef.current.currentTime = 0;
         triggerRef.current?.focus();

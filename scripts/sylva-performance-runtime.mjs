@@ -6,6 +6,7 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 // browser APIs are patched, and finite entrance effects retain their own timing.
 export function installSylvaScheduler() {
   let hostVisible = true;
+  let hostOccluded = false;
   const mobile = window.matchMedia('(max-width: 600px), (pointer: coarse)');
   const listeners = new Set();
   const notify = () => listeners.forEach((listener) => listener());
@@ -43,8 +44,9 @@ export function installSylvaScheduler() {
   });
   window.addEventListener('message', (event) => {
     if (event.source !== window.parent || event.origin !== window.location.origin) return;
-    if (event.data?.type !== 'threeui:visibility') return;
-    hostVisible = event.data.visible === true;
+    if (event.data?.type === 'threeui:occlusion') hostOccluded = event.data.occluded === true;
+    else if (event.data?.type === 'threeui:visibility') hostVisible = event.data.visible === true;
+    else return;
     notify();
   });
   document.addEventListener('visibilitychange', notify);
@@ -56,10 +58,10 @@ export function installSylvaScheduler() {
       let frame = 0;
       let lastDraw = -Infinity;
       function schedule() {
-        if (pending && visible && hostVisible && !scrolling && !document.hidden && !frame) {
+        if (pending && visible && hostVisible && !hostOccluded && !scrolling && !document.hidden && !frame) {
           frame = requestAnimationFrame((now) => {
             frame = 0;
-            if (!mobile.matches || now - lastDraw >= 1000 / 30 - 0.5) {
+            if (now - lastDraw >= 1000 / (mobile.matches ? 30 : 60) - 0.5) {
               lastDraw = now;
               pending = draw(now) !== false;
             }
@@ -99,12 +101,12 @@ export function optimizeSylvaRuntime(html) {
   replace('<script src="inner-green-assets/three.min.js"></script>', `<script>${installSylvaScheduler.toString()}\ninstallSylvaScheduler();</script>\n<script src="inner-green-assets/three.min.js"></script>`);
 
   // Keep the archived source intact; derive a lighter scene for phones and
-  // touch devices without reducing desktop detail.
+  // touch devices; cap desktop density and render resolution as well.
   replace('    var small = narrow ||', "    var mobile = matchMedia('(max-width: 600px), (pointer: coarse)').matches;\n    var small = narrow ||");
-  replace('var BLADES_NEAR = small ? 70000 : 190000;', 'var BLADES_NEAR = mobile ? 24000 : small ? 70000 : 190000;');
-  replace('var BLADES_FAR  = small ? 20000 :  60000;', 'var BLADES_FAR  = mobile ? 6000 : small ? 20000 : 60000;');
-  replace('renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.6 : 2));', 'renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : small ? 1.6 : 2));');
-  replace('DPR = Math.min(window.devicePixelRatio || 1, 2);', "DPR = Math.min(window.devicePixelRatio || 1, matchMedia('(max-width: 600px), (pointer: coarse)').matches ? 1 : 2);");
+  replace('var BLADES_NEAR = small ? 70000 : 190000;', 'var BLADES_NEAR = mobile ? 24000 : small ? 50000 : 95000;');
+  replace('var BLADES_FAR  = small ? 20000 :  60000;', 'var BLADES_FAR  = mobile ? 6000 : small ? 15000 : 30000;');
+  replace('renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.6 : 2));', 'renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.25));');
+  replace('DPR = Math.min(window.devicePixelRatio || 1, 2);', "DPR = Math.min(window.devicePixelRatio || 1, matchMedia('(max-width: 600px), (pointer: coarse)').matches ? 1 : 1.25);");
 
   // A hidden mobile play button should not allocate WebGL targets or compile
   // shaders. Observe until visible, so changing orientation still enables it.

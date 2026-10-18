@@ -218,3 +218,35 @@ test('a reduced-motion resize skipped by the idle throttle is painted on the nex
   assert.equal(vm.runInContext('frame(157)', context), false);
   assert.equal(context.draws, 1);
 });
+
+
+test('desktop high-refresh displays render at most 60 frames per second', () => {
+  const h = harness();
+  let draws = 0;
+  h.loop(() => { draws++; return true; }, {}).invalidate();
+  for (let i = 0; i < 240; i++) h.frame(1000 / 240);
+  assert.equal(draws, 60);
+});
+
+test('video occlusion pauses rendering independently of viewport visibility', () => {
+  const h = harness();
+  let draws = 0;
+  h.loop(() => { draws++; return true; }, {}).invalidate();
+  h.frame();
+  const occlude = (occluded, origin = h.window.location.origin) => h.window.emit('message', {
+    source: h.parent, origin, data: { type: 'threeui:occlusion', occluded },
+  });
+  occlude(true, 'https://unrelated.test');
+  assert.equal(h.scheduled.size, 1);
+  occlude(true);
+  assert.equal(h.scheduled.size, 0);
+  h.host(true);
+  h.frame();
+  assert.equal(draws, 1, 'Viewport updates must not restart a covered hero');
+  h.host(false);
+  occlude(false);
+  assert.equal(h.scheduled.size, 0, 'Closing video must not restart an offscreen hero');
+  h.host(true);
+  h.frame();
+  assert.equal(draws, 2);
+});

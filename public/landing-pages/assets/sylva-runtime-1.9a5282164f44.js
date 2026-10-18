@@ -1,5 +1,6 @@
 function installSylvaScheduler() {
   let hostVisible = true;
+  let hostOccluded = false;
   const mobile = window.matchMedia('(max-width: 600px), (pointer: coarse)');
   const listeners = new Set();
   const notify = () => listeners.forEach((listener) => listener());
@@ -37,8 +38,9 @@ function installSylvaScheduler() {
   });
   window.addEventListener('message', (event) => {
     if (event.source !== window.parent || event.origin !== window.location.origin) return;
-    if (event.data?.type !== 'threeui:visibility') return;
-    hostVisible = event.data.visible === true;
+    if (event.data?.type === 'threeui:occlusion') hostOccluded = event.data.occluded === true;
+    else if (event.data?.type === 'threeui:visibility') hostVisible = event.data.visible === true;
+    else return;
     notify();
   });
   document.addEventListener('visibilitychange', notify);
@@ -50,10 +52,10 @@ function installSylvaScheduler() {
       let frame = 0;
       let lastDraw = -Infinity;
       function schedule() {
-        if (pending && visible && hostVisible && !scrolling && !document.hidden && !frame) {
+        if (pending && visible && hostVisible && !hostOccluded && !scrolling && !document.hidden && !frame) {
           frame = requestAnimationFrame((now) => {
             frame = 0;
-            if (!mobile.matches || now - lastDraw >= 1000 / 30 - 0.5) {
+            if (now - lastDraw >= 1000 / (mobile.matches ? 30 : 60) - 0.5) {
               lastDraw = now;
               pending = draw(now) !== false;
             }
