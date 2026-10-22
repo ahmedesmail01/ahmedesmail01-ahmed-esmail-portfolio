@@ -4,7 +4,8 @@ node_modules
 out
 .sites-runtime
 .wrangler
-.openai
+.openai/*
+!.openai/hosting.json
 .env
 .env.*
 *.log
