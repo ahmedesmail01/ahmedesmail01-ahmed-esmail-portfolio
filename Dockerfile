@@ -12,6 +12,8 @@ FROM caddy:2-alpine@sha256:24ec7b05bc532c7bb57f727030c5056e257ff7138b4b504603068
 ENV XDG_CONFIG_HOME=/tmp/caddy/config XDG_DATA_HOME=/tmp/caddy/data
 COPY --from=build /app/out /srv
 COPY deploy/Caddyfile /etc/caddy/Caddyfile
+# Port 8080 does not need the base image binary’s low-port capability.
+RUN setcap -r /usr/bin/caddy
 USER 1000:1000
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=5 CMD wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1
