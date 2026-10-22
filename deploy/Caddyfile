@@ -1,0 +1,27 @@
+{
+ admin off
+ auto_https off
+}
+:8080 {
+ root * /srv
+ encode zstd gzip
+ header {
+  -Server
+  X-Content-Type-Options nosniff
+  Referrer-Policy strict-origin-when-cross-origin
+  Cache-Control "public, max-age=0, must-revalidate"
+ }
+ respond /healthz "ok" 200
+ @immutable path /_next/static/* /landing-pages/assets/* /images/responsive/*
+ header @immutable Cache-Control "public, max-age=31536000, immutable"
+ @original path /landing-pages/inner-green-assets/* /landing-pages/runtime/*
+ header @original Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+ try_files {path} {path}/index.html
+ file_server {
+  hide /_headers /_redirects
+ }
+ handle_errors {
+  rewrite * /404.html
+  file_server
+ }
+}
